@@ -1,0 +1,15 @@
+.idea/
+node_modules/
+.vscode/
+*.map
+.DS_Store
+.sourcemaps
+dist/
+k*.sh
+r*.sh
+k*.bat
+r*.bat
+opis.txt
+package-lock.json
+build/
+.env
