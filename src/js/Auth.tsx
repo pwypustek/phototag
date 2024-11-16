@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import graphqlClient from "./graphqlClient";
+import { graphqlClient } from "./graphqlClient";
 import { useSession } from "./SessionContext";
 
 function Login() {
@@ -19,17 +19,16 @@ function Login() {
 
     try {
       const cwid = "todo";
-      const result = await graphqlClient(
-        `
-         query {
-             auth(params: { type: "login", user: "${email}", pass: "${password}", cwid: "${cwid}" })
-         }
-      `
-      );
+      const result = await graphqlClient(`auth`, {
+        type: "login",
+        user: email,
+        pass: password,
+        cwid: cwid,
+      });
 
       if (result?.auth?.ok) {
         localStorage.setItem("sessionId", result.auth.sessionId);
-        setLoginStatus(true, email);
+        setLoginStatus(true, email, result.auth.sessionId, cwid);
         setTimeout(() => navigate("/"), 0);
       } else {
         alert("Błąd logowania");
@@ -95,13 +94,10 @@ function Forgot() {
   const handleForgot = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     try {
-      const result = await graphqlClient(
-        `
-        query {
-            auth(params: { type: "forgot", user: "${email}" })
-        }
-     `
-      );
+      const result = await graphqlClient(`auth`, {
+        type: "forgot",
+        user: email,
+      });
 
       if (result && result.auth && result.auth.ok === true) {
         alert("Instrukcja logowania została przesłana na maila");
@@ -160,18 +156,16 @@ function Register() {
     e.preventDefault();
     try {
       const cwid = "todo";
-      const result = await graphqlClient(
-        `
-        query {
-            auth(params: { type: "register", user: "${email}", passNew: "${password}", cwid: "${cwid}" })
-        }
-     `,
-        { email: email, password: password }
-      );
+      const result = await graphqlClient(`auth`, {
+        type: "register",
+        user: email,
+        passNew: password,
+        cwid: cwid,
+      });
 
       if (result && result.auth && result.auth.ok === true) {
         localStorage.setItem("sessionId", result.auth.sessionId);
-        setLoginStatus(true, email);
+        setLoginStatus(true, email, result.auth.sessionId, cwid);
         setTimeout(() => navigate("/"), 0);
       } else {
         console.error("Registration failed:", result.errors);

@@ -1,6 +1,6 @@
 {
   "name": "phototag",
-  "version": "1.0.0",
+  "version": "0.12",
   "description": "photoTag App",
   "type": "module",
   "keywords": [
@@ -13,12 +13,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ag-grid-community/client-side-row-model": "^32.3.2",
+    "@ag-grid-community/react": "^32.3.2",
     "@capacitor/android": "^6.1.2",
     "@capacitor/camera": "latest",
     "@capacitor/core": "^6.1.2",
     "@capacitor/ios": "^6.1.2",
     "@capacitor/network": "^6.0.2",
     "@capacitor/splash-screen": "latest",
+    "@rollup/rollup-win32-x64-msvc": "^4.26.0",
     "ag-grid-community": "^32.3.2",
     "ag-grid-react": "^32.3.2",
     "react": "^18.3.1",
@@ -38,6 +41,6 @@
     "vite-tsconfig-paths": "^5.0.1",
     "web-vitals": "^4.2.4"
   },
-  "author": "",
+  "author": "Paweł Wypustek",
   "license": "MIT"
 }
