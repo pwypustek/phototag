@@ -82,11 +82,11 @@ const Grid: React.FC<GridProps> = ({
             cellRenderer: (params: any) => (
               <img
                 src={params.value}
-                style={{
-                  /*width: "100%", */ height: "100%" /*maxHeight: "150px"*/,
-                }}
+                // style={{
+                //   /*width: "100%", */ height: "100%" /*maxHeight: "150px"*/,
+                // }}
                 alt="Gallery"
-                className="cursor-pointer w-16 h-16"
+                className="cursor-pointer" //w-16 h-16
                 onClick={() => {
                   if (onCellClicked) {
                     //params.data.name

@@ -40,7 +40,7 @@ const fetchTags = async (
     });
     setRowData(result.photo.tags || []);
   } catch (error) {
-    console.error("Failed to load tags:", error);
+    alert("Failed to load tags:" + JSON.stringify(error));
   }
 };
 

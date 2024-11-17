@@ -25,8 +25,12 @@ const graphqlClient = async (method: string, params: any) => {
   if (params[`sessionId`] && params[`cwid`]) {
     // ok
   } else {
-    params[`sessionId`] = session.sessionId;
-    params[`cwid`] = session.cwid
+    if (method=="session" || method=="login" || method=="register") {
+      // sessionId i cwid jest już w parametrach
+    } else {
+      params[`sessionId`] = session.sessionId;
+      params[`cwid`] = "todo"; //session.cwid
+    }
   }
 
   let query: string = 
@@ -67,7 +71,7 @@ const graphqlClient = async (method: string, params: any) => {
         .join("\n");
       console.log(errText);      
       alert(errText);
-      throw new Error(errText);
+      //throw new Error(errText);      
     }
 
     return responseData.data;

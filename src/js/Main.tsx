@@ -18,7 +18,7 @@ interface FooterProps {
 const Main = (addTab: any) => {
   const { ModalComponent, openModal } = useModal();
   //const imageRef = useRef<HTMLImageElement | null>(null);
-  const { username } = useSession();
+  const { username, sessionId, cwid } = useSession();
   const [rowDataTag, setRowDataTag] = useState([]);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [formImages, setFormImages] = useState<string[]>([]);
@@ -45,7 +45,6 @@ const Main = (addTab: any) => {
 
       // Przykład użycia:
       const path = String(photo.path || photo.webPath);
-      alert(`Nazwa zdjęcia: ${path}`);
       const photoFileName = path.substring(path.lastIndexOf("/") + 1);
 
       // const getFileNameFromPath = (path) => {
@@ -215,8 +214,9 @@ const Main = (addTab: any) => {
     try {
       const sessionId = localStorage.getItem("sessionId");
       await graphqlClient(`auth`, {
-        type: "session",
+        type: "logout",
         sessionId: sessionId,
+        cwid: cwid,
       });
       logout();
       navigate("/login");

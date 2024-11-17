@@ -1,6 +1,6 @@
 {
   "appId": "com.example.app",
-  "appName": "test1",
+  "appName": "photoTag",
   "webDir": "dist",
   "plugins": {
     "SplashScreen": {

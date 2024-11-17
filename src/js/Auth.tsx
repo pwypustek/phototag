@@ -28,7 +28,7 @@ function Login() {
 
       if (result?.auth?.ok) {
         localStorage.setItem("sessionId", result.auth.sessionId);
-        setLoginStatus(true, email, result.auth.sessionId, cwid);
+        setLoginStatus(true, email, result.auth.sessionId, result.auth.cwid);
         setTimeout(() => navigate("/"), 0);
       } else {
         alert("Błąd logowania");
@@ -165,7 +165,7 @@ function Register() {
 
       if (result && result.auth && result.auth.ok === true) {
         localStorage.setItem("sessionId", result.auth.sessionId);
-        setLoginStatus(true, email, result.auth.sessionId, cwid);
+        setLoginStatus(true, email, result.auth.sessionId, result.auth.cwid);
         setTimeout(() => navigate("/"), 0);
       } else {
         console.error("Registration failed:", result.errors);

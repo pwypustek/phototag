@@ -9,9 +9,13 @@ export default defineConfig({
     minify: false,
     emptyOutDir: true,
   },
+  appType: "spa",
   plugins: [tsconfigPaths()],
   server: {
     host: 'localhost',
     port: 5173,
+    
+    //historyApiFallback: true // Przekierowanie wszystkich ścieżek do aplikacji React
   },
 });
+
