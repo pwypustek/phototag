@@ -5,7 +5,7 @@ import { FaCamera, FaFolderOpen } from "react-icons/fa";
 
 const formFetchData = async (
   objectId: string,
-  images: string[],
+  images: any[],
   setRowData: React.Dispatch<React.SetStateAction<never[]>>
 ) => {
   try {
@@ -18,10 +18,10 @@ const formFetchData = async (
     } else {
       rowDataLocal = images.map((image, idx) => ({
         id: idx + 1,
-        imageUrl: `data:image/jpeg;base64,${image}`,
+        imageUrl: `data:image/jpeg;base64,${image.base64String}`,
+        name: image.name,
       }));
     }
-    console.log(`setRowData ${rowDataLocal}`);
     setRowData(rowDataLocal || []);
   } catch (error) {
     console.error("Failed to load tags:", error);

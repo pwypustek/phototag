@@ -17,14 +17,10 @@ async function fetchConfig() {
 
 const graphqlClient = async (method: string, params: any) => {
   if (!config) {
-    console.log(`Brak konfiguracji pobieram`);
     await fetchConfig();
-  } else {
-    console.log(`Konfiguracja ok`);
   }
 
   const session = useSessionOutsideReact();
-  debugger;
 
   if (params[`sessionId`] && params[`cwid`]) {
     // ok
@@ -66,10 +62,10 @@ const graphqlClient = async (method: string, params: any) => {
     const responseData = await response.json();
 
     if (responseData.errors) {
-      console.log(`Error responseData.errors`);
       const errText = responseData.errors
         .map((error: { message: any }) => error.message)
         .join("\n");
+      console.log(errText);      
       alert(errText);
       throw new Error(errText);
     }

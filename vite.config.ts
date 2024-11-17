@@ -10,4 +10,8 @@ export default defineConfig({
     emptyOutDir: true,
   },
   plugins: [tsconfigPaths()],
+  server: {
+    host: 'localhost',
+    port: 5173,
+  },
 });

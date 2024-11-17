@@ -17,7 +17,7 @@ interface FooterProps {
 }
 const Main = (addTab: any) => {
   const { ModalComponent, openModal } = useModal();
-  const imageRef = useRef<HTMLImageElement | null>(null);
+  //const imageRef = useRef<HTMLImageElement | null>(null);
   const { username } = useSession();
   const [rowDataTag, setRowDataTag] = useState([]);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
@@ -34,20 +34,49 @@ const Main = (addTab: any) => {
     try {
       const photo = await Camera.getPhoto({
         source: CameraSource.Camera,
-        resultType: CameraResultType.Base64,
-        quality: 90,
+        saveToGallery: true,
+        //Aby uzyskać dostęp do nazwy pliku wygenerowanej przez system,
+        //użyj resultType: "uri". Zwróci ona ścieżkę do pliku w systemie,
+        //którą możesz wykorzystać do odczytania nazwy pliku.
+        resultType: CameraResultType.Uri, //"uri",
+        //resultType: CameraResultType.Base64,
+        quality: 100, //90,
       });
 
-      if (imageRef.current) {
-        imageRef.current.src = `data:image/jpeg;base64,${photo.base64String}`;
+      // Przykład użycia:
+      const path = String(photo.path || photo.webPath);
+      alert(`Nazwa zdjęcia: ${path}`);
+      const photoFileName = path.substring(path.lastIndexOf("/") + 1);
+
+      // const getFileNameFromPath = (path) => {
+      //   return path.substring(path.lastIndexOf('/') + 1);
+      // };
+
+      // // Przykład użycia:
+      // const fileName = getFileNameFromPath(photo.path || photo.webPath);
+      // console.log('Nazwa zdjęcia:', fileName);
+
+      // if (imageRef.current) {
+      //   imageRef.current.src = `data:image/jpeg;base64,${photo.base64String}`;
+      // }
+
+      if (photo.path || photo.webPath) {
+        // Odczytaj plik jako Base64
+        const base64Data = await convertFileToBase64(
+          String(photo.path || photo.webPath)
+        );
+
+        await graphqlClient(`photo`, {
+          type: "upload",
+          filename: photoFileName,
+          content: base64Data,
+          user: username,
+          tag: tag,
+        });
+      } else {
+        alert("Error photo path");
       }
-      await graphqlClient(`photo`, {
-        type: "upload",
-        filename: "photo.jpg",
-        content: photo.base64String,
-        user: username,
-        tag: tag,
-      });
+
       fetchTags("", username, setRowDataTag);
     } catch (e) {
       console.error("Error taking photo:", e);
@@ -69,14 +98,13 @@ const Main = (addTab: any) => {
     }
   };
 
-  const handleDownloadSelected = (selectedImages: string[]) => {
-    debugger;
-    selectedImages.forEach((imageUrl, index) => {
-      const link = document.createElement("a");
-      link.href = `data:image/jpeg;base64,${imageUrl}`;
-      link.download = `downloaded-image-${index + 1}.jpg`;
-      link.click();
-    });
+  const handleDownloadSelected = (selectedImages: any) => {
+    //selectedImages.forEach((imageUrl, index) => {
+    // const link = document.createElement("a");
+    // link.href = `data:image/jpeg;base64,${selectedImages.imageUrl}`;
+    // link.download = `downloaded-image-${selectedImages.name}.jpg`; //link.download = `downloaded-image-${index + 1}.jpg`;
+    // link.click();
+    //});
   };
 
   const closeForm = () => {
@@ -306,9 +334,9 @@ const Main = (addTab: any) => {
           browse={browse}
           gridParam={{ multiSelect: false }}
         />
-        <p>
+        {/*<p>
           <img ref={imageRef} className="max-w-full" />
-        </p>
+        </p>*/}
       </main>
       <Footer
         onCreateTag={handleCreateTag}
@@ -318,14 +346,17 @@ const Main = (addTab: any) => {
 
       {ModalComponent}
 
-      <Form
-        //objectId="settings"
-        objectId={formObjectId}
-        images={formImages}
-        isOpen={isFormOpen}
-        onClose={closeForm}
-        onDownload={handleDownloadSelected}
-      />
+      {isFormOpen && (
+        <Form
+          //objectId="settings"
+          objectId={formObjectId}
+          images={formImages}
+          isOpen={isFormOpen}
+          tagName={selectedTag}
+          onClose={closeForm}
+          onDownload={handleDownloadSelected}
+        />
+      )}
     </div>
   );
 };
@@ -361,5 +392,28 @@ const Footer: React.FC<FooterProps> = ({
     </button>
   </div>
 );
+
+const convertFileToBase64 = async (filePath: string) => {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+      const reader = new FileReader();
+      reader.onloadend = function () {
+        //resolve(reader?.result?.split(",")[1]); // Usuwamy nagłówek data:image/jpeg;base64,
+        if (typeof reader.result === "string") {
+          resolve(reader.result.split(",")[1]); // Usuwamy nagłówek data:image/jpeg;base64,
+        } else {
+          reject(new Error("Result is not a string"));
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(xhr.response);
+    };
+    xhr.onerror = reject;
+    xhr.open("GET", filePath);
+    xhr.responseType = "blob";
+    xhr.send();
+  });
+};
 
 export default Main;

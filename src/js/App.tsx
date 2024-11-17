@@ -55,7 +55,7 @@ function App() {
       setLoading(false);
     };
     checkLoginStatus();
-  }, [navigate, location]);
+  }, [navigate, location, setLoginStatus, graphqlClient]);
 
   if (loading) {
     return null; // Renderowanie pustego komponentu, dopóki status logowania się ładuje

@@ -2,11 +2,14 @@ import React, { useEffect, useState } from "react";
 import Grid from "./Grid";
 import { FaDownload } from "react-icons/fa";
 import { formFetchData } from "./Data";
+import { graphqlClient, config } from "./graphqlClient";
+import { useSession, useSessionOutsideReact } from "./SessionContext";
 
 interface FormProps {
   objectId: string;
   images: string[];
   isOpen: boolean;
+  tagName: string | null;
   onClose: () => void;
   onDownload: (selectedImages: string[]) => void;
 }
@@ -15,19 +18,49 @@ const Form: React.FC<FormProps> = ({
   objectId,
   images,
   isOpen,
+  tagName,
   onClose,
   onDownload,
 }) => {
-  if (!isOpen) return null;
-
+  //if (!isOpen) return null;
   const [rowData, setRowData] = useState([]);
-
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   useEffect(() => {
     formFetchData(objectId, images, setRowData);
   }, []);
 
+  const handleCellClick = async (imageUrl: string) => {
+    try {
+      const session = useSessionOutsideReact();
+      const result = await graphqlClient(`photo`, {
+        type: "fullImage",
+        user: session.username,
+        tag: tagName,
+        name: imageUrl,
+      });
+      //setFormImages(result.photo.images || []);
+
+      setSelectedImage(`data:image/jpeg;base64,${result.photo.fullImage}`); //
+      //setSelectedImage(`data:image/jpeg;base64,${result.fullImage.base64}`); //result.photo.images
+    } catch (error) {
+      console.error("Failed to fetch full image:", error);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90"
+          onClick={() => setSelectedImage(null)}
+        >
+          <img
+            src={selectedImage}
+            alt="Full view"
+            className="max-w-full max-h-full"
+          />
+        </div>
+      )}
       <div className="relative p-4 bg-white rounded shadow-lg max-w-2xl w-full ag-theme-alpine">
         <button
           className="absolute top-4 right-4 text-gray-700 hover:text-gray-900 text-2xl"
@@ -39,12 +72,13 @@ const Form: React.FC<FormProps> = ({
 
         <Grid
           objectId={objectId}
-          rowData={rowData}
+          rowData={rowData || []}
           gridParam={{ multiSelect: true }}
           onSelectionChanged={
             (selectedRows) => onDownload(selectedRows)
             //onDownload(selectedRows.map((row: any) => row.imageUrl))
           }
+          onCellClicked={(image: string) => handleCellClick(image)}
         />
 
         <div className="flex justify-around mt-4">

@@ -55,23 +55,23 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
     setUsername(null);
   };
 
-  const browse = async (tag: string) => {
-    alert("browse in context " + tag);
+  // const browse = async (tag: string) => {
+  //   alert("browse in context " + tag);
 
-    try {
-      const result = await graphqlClient(`photo`, {
-        type: "browse",
-        user: username,
-        tag: tag,
-      });
-      setGalleryImages(result.photo.images || []);
-      setGalleryOpen(true);
-      alert(result.photo.images);
-    } catch (error) {
-      //await showAlert("Błąd podczas przeglądania zdjęć.");
-      console.error(error);
-    }
-  };
+  //   try {
+  //     const result = await graphqlClient(`photo`, {
+  //       type: "browse",
+  //       user: username,
+  //       tag: tag,
+  //     });
+  //     setGalleryImages(result.photo.images || []);
+  //     setGalleryOpen(true);
+  //     alert(result.photo.images);
+  //   } catch (error) {
+  //     //await showAlert("Błąd podczas przeglądania zdjęć.");
+  //     console.error(error);
+  //   }
+  // };
 
   const contextValue: SessionContextType = {
     isLoggedIn,

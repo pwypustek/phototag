@@ -11,6 +11,8 @@ interface GridProps {
   objectId: string;
   rowData: any[];
   onSelectionChanged?: (selectedRow: any) => void;
+  onCellClicked?: (image: string) => void;
+
   gridParam?: Record<string, any>;
   takePhoto?: (tag: string) => void;
   browse?: (tag: string) => void;
@@ -21,6 +23,7 @@ const Grid: React.FC<GridProps> = ({
   objectId,
   rowData,
   onSelectionChanged,
+  onCellClicked,
   gridParam = {},
   takePhoto,
   browse,
@@ -83,6 +86,15 @@ const Grid: React.FC<GridProps> = ({
                   /*width: "100%", */ height: "100%" /*maxHeight: "150px"*/,
                 }}
                 alt="Gallery"
+                className="cursor-pointer w-16 h-16"
+                onClick={() => {
+                  if (onCellClicked) {
+                    //params.data.name
+                    onCellClicked(params.data.name);
+                  } else {
+                    alert("Błąd otwarcia zdjęcia");
+                  }
+                }}
               />
             ),
           },
@@ -95,7 +107,7 @@ const Grid: React.FC<GridProps> = ({
               const downloadImage = () => {
                 const link = document.createElement("a");
                 link.href = params.data.imageUrl;
-                link.download = `image-${params.data.id}.jpg`;
+                link.download = `image-${params.data.name}.jpg`;
                 link.click();
               };
               return (
@@ -106,6 +118,15 @@ const Grid: React.FC<GridProps> = ({
                   <FaDownload className="text-2xl" />
                 </button>
               );
+            },
+          },
+          {
+            headerName: "Name",
+            field: "name",
+            width: 300,
+            cellStyle: { paddingLeft: 0, paddingRight: 0 },
+            cellRenderer: (params: any) => {
+              return params.value;
             },
           },
 
@@ -187,11 +208,6 @@ const Grid: React.FC<GridProps> = ({
         rowHeight={rowHeight}
         rowSelection={rowSelection as never}
         onSelectionChanged={(event) => {
-          console.log(
-            `onSelectionChanged?.(event.api.getSelectedRows()[0] || null); ${
-              event.api.getSelectedRows()[0]
-            }`
-          );
           onSelectionChanged?.(event.api.getSelectedRows()[0] || null);
         }}
       />
