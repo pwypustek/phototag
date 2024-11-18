@@ -34,7 +34,7 @@ function Login() {
         alert("Błąd logowania");
       }
     } catch (error) {
-      console.error("Error during login", error);
+      alert(`Error during login: ${JSON.stringify(error)}`);
     }
   };
 
@@ -107,7 +107,7 @@ function Forgot() {
         alert("Wystąpił błąd");
       }
     } catch (error) {
-      console.error("Error during password reset", error);
+      alert(`Error during password reset: ${JSON.stringify(error)}`);
     }
   };
 
@@ -168,10 +168,10 @@ function Register() {
         setLoginStatus(true, email, result.auth.sessionId, result.auth.cwid);
         setTimeout(() => navigate("/"), 0);
       } else {
-        console.error("Registration failed:", result.errors);
+        alert(`Registration failed: ${JSON.stringify(result.errors)}`);
       }
     } catch (error) {
-      console.error("Error during registration", error);
+      alert(`Error during registration: ${JSON.stringify(error)}`);
     }
   };
 

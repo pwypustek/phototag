@@ -23,6 +23,7 @@ const Form: React.FC<FormProps> = ({
   onDownload,
 }) => {
   //if (!isOpen) return null;
+  if (!isOpen /* || !tagName*/) return null;
   const [rowData, setRowData] = useState([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   useEffect(() => {
@@ -43,9 +44,11 @@ const Form: React.FC<FormProps> = ({
       setSelectedImage(`data:image/jpeg;base64,${result.photo.fullImage}`); //
       //setSelectedImage(`data:image/jpeg;base64,${result.fullImage.base64}`); //result.photo.images
     } catch (error) {
-      console.error("Failed to fetch full image:", error);
+      alert(`Failed to fetch full image: ${JSON.stringify(error)}`);
     }
   };
+
+  if (!isOpen /*|| !tagName*/) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">

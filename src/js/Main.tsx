@@ -25,9 +25,16 @@ const Main = (addTab: any) => {
   const [formObjectId, setFormObjectId] = useState<string>("");
   const [isFormOpen, setFormOpen] = useState(false);
 
+  // from Title
+  const { isLoggedIn, logout } = useSession();
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const navigate = useNavigate();
+
   useEffect(() => {
     SplashScreen.hide();
-    fetchTags("", username, setRowDataTag);
+    if (isLoggedIn) {
+      fetchTags("", username, setRowDataTag);
+    }
   }, []);
 
   const takePhoto = async (tag: string) => {
@@ -93,7 +100,7 @@ const Main = (addTab: any) => {
       setFormImages(result.photo.images || []);
       setFormOpen(true);
     } catch (error) {
-      console.error("Error browsing photos:", error);
+      alert("Error browsing photos:" + JSON.stringify(error));
     }
   };
 
@@ -130,7 +137,7 @@ const Main = (addTab: any) => {
         await fetchTags("", username, setRowDataTag);
       }
     } catch (error) {
-      console.error("Failed to add new tag:", error);
+      alert(`Failed to add new tag: ${JSON.stringify(error)}`);
     }
   };
 
@@ -166,7 +173,7 @@ const Main = (addTab: any) => {
         });
         fetchTags("", username, setRowDataTag);
       } catch (error) {
-        console.error("Failed to update tag:", error);
+        alert(`Failed to update tag: ${JSON.stringify(error)}`);
       }
     } else {
       openModal(`Nie wprowadzono zmian ${selectedTag} ${tagType} ${tagName}`, {
@@ -197,14 +204,9 @@ const Main = (addTab: any) => {
         fetchTags("", username, setRowDataTag);
       }
     } catch (error) {
-      console.error("Failed to delete tag:", error);
+      alert(`Failed to delete tag: ${JSON.stringify(error)}`);
     }
   };
-
-  // from Title
-  const { isLoggedIn, logout } = useSession();
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const navigate = useNavigate();
 
   const toggleDropdown = () => {
     setDropdownOpen(!isDropdownOpen);

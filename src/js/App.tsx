@@ -28,15 +28,21 @@ function App() {
       const cwid = "todo";
       const sessionId = localStorage.getItem("sessionId");
       if (sessionId) {
-        const result = await graphqlClient(`auth`, {
-          type: "session",
-          sessionId: sessionId,
-          cwid: cwid,
-        });
+        try {
+          console.log("Validating session with ID:", sessionId);
 
-        if (result?.auth?.ok) {
-          setLoginStatus(true, result.auth.user, sessionId, cwid);
-          isLoggedInLocal = true;
+          const result = await graphqlClient(`auth`, {
+            type: "session",
+            sessionId: sessionId,
+            cwid: cwid,
+          });
+
+          if (result?.auth?.ok) {
+            setLoginStatus(true, result.auth.user, sessionId, cwid);
+            isLoggedInLocal = true;
+          }
+        } catch (error) {
+          alert(`Failed to check session: ${JSON.stringify(error)}`);
         }
       }
 

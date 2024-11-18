@@ -16,35 +16,34 @@ async function fetchConfig() {
 }
 
 const graphqlClient = async (method: string, params: any) => {
-  if (!config) {
-    await fetchConfig();
-  }
-
-  const session = useSessionOutsideReact();
-
-  if (params[`sessionId`] && params[`cwid`]) {
-    // ok
-  } else {
-    if (method=="session" || method=="login" || method=="register") {
-      // sessionId i cwid jest już w parametrach
-    } else {
-      params[`sessionId`] = session.sessionId;
-      params[`cwid`] = "todo"; //session.cwid
-    }
-  }
-
-  let query: string = 
-  `query { ${method}(params: { `;
-
-  for (let i in params) {
-    query += `${i}:"${params[i]}",`;
-  }
-  query = query.slice(0, -1); // ostatni przecinek wypierdalamy
-  
-  query += `})}`;
-
-  let variables = {};
   try {
+    if (!config) {
+      await fetchConfig();
+    }
+
+    const session = useSessionOutsideReact();
+
+    if (params[`sessionId`] && params[`cwid`]) {
+      // ok
+    } else {
+      if (method == "session" || method == "login" || method == "register") {
+        // sessionId i cwid jest już w parametrach
+      } else {
+        params[`sessionId`] = session.sessionId;
+        params[`cwid`] = "todo"; //session.cwid
+      }
+    }
+
+    let query: string = `query { ${method}(params: { `;
+
+    for (let i in params) {
+      query += `${i}:"${params[i]}",`;
+    }
+    query = query.slice(0, -1); // ostatni przecinek wypierdalamy
+
+    query += `})}`;
+
+    let variables = {};
     const response = await fetch(config.backend, {
       method: "POST",
       headers: {
@@ -69,9 +68,8 @@ const graphqlClient = async (method: string, params: any) => {
       const errText = responseData.errors
         .map((error: { message: any }) => error.message)
         .join("\n");
-      console.log(errText);      
-      alert(errText);
-      //throw new Error(errText);      
+      console.log(errText);
+      throw new Error(errText);
     }
 
     return responseData.data;
