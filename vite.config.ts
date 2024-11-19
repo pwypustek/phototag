@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 export default defineConfig({
   root: "./src",
@@ -10,7 +11,14 @@ export default defineConfig({
     emptyOutDir: true,
   },
   appType: "spa",
-  plugins: [tsconfigPaths()],
+  plugins: [tsconfigPaths(),viteStaticCopy({
+    targets: [
+      {
+        src: 'release/config.json', // Ścieżka do Twojego pliku config.json
+        dest: ''           // Katalog docelowy (pusty oznacza katalog główny builda)
+      }
+    ]
+  })],
   server: {
     host: 'localhost',
     port: 5173,

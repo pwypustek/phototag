@@ -3,7 +3,7 @@ import { useSession, useSessionOutsideReact } from "./SessionContext";
 
 async function fetchConfig() {
   try {
-    const response = await fetch("./config.json");
+    const response = await fetch("/config.json");
     if (!response.ok) {
       throw new Error("Failed to load config.json");
     }
@@ -58,7 +58,7 @@ const graphqlClient = async (method: string, params: any) => {
     if (!response.ok) {
       alert(`GraphQL error`);
       throw new Error(
-        `GraphQL error: ${response.status} ${response.statusText}`
+        `GraphQL error: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -74,10 +74,8 @@ const graphqlClient = async (method: string, params: any) => {
 
     return responseData.data;
   } catch (error) {
-    console.error("Error during GraphQL request:", error);
-    alert("Wystąpił błąd podczas wykonywania zapytania.");
     throw error;
   }
 };
 
-export { graphqlClient, config };
+export { config, graphqlClient };

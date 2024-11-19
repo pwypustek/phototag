@@ -42,7 +42,7 @@ function App() {
             isLoggedInLocal = true;
           }
         } catch (error) {
-          alert(`Failed to check session: ${JSON.stringify(error)}`);
+          alert(`Failed to check session: ${String(error)}`);
         }
       }
 

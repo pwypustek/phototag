@@ -13,3 +13,4 @@ opis.txt
 package-lock.json
 build/
 .env
+src/release/config.json

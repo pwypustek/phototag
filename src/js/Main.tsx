@@ -85,7 +85,7 @@ const Main = (addTab: any) => {
 
       fetchTags("", username, setRowDataTag);
     } catch (e) {
-      console.error("Error taking photo:", e);
+      alert(`Error taking photo: ${String(e)}`);
     }
   };
 
