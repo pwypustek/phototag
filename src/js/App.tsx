@@ -1,12 +1,6 @@
 import { useEffect, useState, useRef } from "react";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
-import { Login, Register, Forgot } from "./Auth";
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { Login, Register, Forgot, Activate } from "./Auth";
 import Main from "./Main";
 import { graphqlClient, config } from "./graphqlClient";
 import { useSession } from "./SessionContext";
@@ -24,18 +18,13 @@ function App() {
     if (hasRedirected.current) return;
 
     const checkLoginStatus = async () => {
+      console.log("App useEffect checkLoginStatus");
       let isLoggedInLocal = false;
       const cwid = "todo";
       const sessionId = localStorage.getItem("sessionId");
       if (sessionId) {
         try {
-          console.log("Validating session with ID:", sessionId);
-
-          const result = await graphqlClient(`auth`, {
-            type: "session",
-            sessionId: sessionId,
-            cwid: cwid,
-          });
+          const result = await graphqlClient(`auth`, { type: "session", sessionId: sessionId, cwid: cwid });
 
           if (result?.auth?.ok) {
             setLoginStatus(true, result.auth.user, sessionId, cwid);
@@ -46,14 +35,12 @@ function App() {
         }
       }
 
-      if (isLoggedInLocal && location.pathname !== "/register") {
-        navigate("/");
+      if (isLoggedInLocal && location.pathname !== "/register" && location.pathname !== "/activate") {
+        if (location.pathname != "/") {
+          navigate("/");
+        }
         hasRedirected.current = true;
-      } else if (
-        !isLoggedInLocal &&
-        location.pathname !== "/login" &&
-        location.pathname !== "/register"
-      ) {
+      } else if (!isLoggedInLocal && location.pathname !== "/login" && location.pathname !== "/register" && location.pathname !== "/activate") {
         navigate("/login");
         hasRedirected.current = true;
       }
@@ -78,8 +65,8 @@ function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/activate" element={<Activate />} />
       <Route path="/forgot" element={<Forgot />} />
-
       <Route path="/" element={mainActive} />
     </Routes>
   );
@@ -108,11 +95,7 @@ const MainTabs = () => {
         <button
           className="flex items-center w-3/10 p-1 my-1 text-lg font-semibold text-white bg-green-500 hover:bg-green-600 shadow-md transition-all duration-200"
           onClick={
-            () =>
-              addTab(
-                `Tab${String(Math.random()).substring(3, 7)}`,
-                <Main /*isModal={false}*/ addTab={addTab} />
-              )
+            () => addTab(`Tab${String(Math.random()).substring(3, 7)}`, <Main /*isModal={false}*/ addTab={addTab} />)
             //addTab(`Tab ${String(Math.random()).substing(0,3)}`, <Main addTab={addTab} />);
           }
         >
@@ -128,8 +111,7 @@ const MainTabs = () => {
                   marginRight: "10px",
                   padding: "10px",
                   cursor: "pointer",
-                  borderBottom:
-                    tab.id === activeTab ? "2px solid blue" : "none",
+                  borderBottom: tab.id === activeTab ? "2px solid blue" : "none",
                 }}
                 onClick={() => setActiveTab(tab.id)}
               >
@@ -138,12 +120,7 @@ const MainTabs = () => {
             ))}
           </ul>
         </div>
-        <div>
-          {tabs.map(
-            (tab) =>
-              tab.id === activeTab && <div key={tab.id}>{tab.content}</div>
-          )}
-        </div>
+        <div>{tabs.map((tab) => tab.id === activeTab && <div key={tab.id}>{tab.content}</div>)}</div>
       </div>
     </div>
   );
@@ -151,9 +128,7 @@ const MainTabs = () => {
 
 function AppWrapper() {
   return (
-    <BrowserRouter
-      future={{ v7_relativeSplatPath: true, v7_startTransition: true }}
-    >
+    <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
       <SessionProvider>
         <App />
       </SessionProvider>

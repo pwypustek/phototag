@@ -16,8 +16,14 @@
     //"noEmit": true,
     "jsx": "react-jsx",
 
-    "outDir": "./build" /* Specify an output folder for all emitted files. */
+    "outDir": "./build" /* Specify an output folder for all emitted files. */,
     //"sourceMap": true /* Create source map files for emitted JavaScript files. */
+
+    /* dodane dla instalacji shadcn */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
   "include": ["src"],
   "exclude": ["build"]

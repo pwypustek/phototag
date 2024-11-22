@@ -1,34 +1,20 @@
-import React, { useEffect, useState } from "react";
-import Grid from "./Grid";
-import { FaDownload } from "react-icons/fa";
-import { formFetchData } from "./Data";
+import React, { useState } from "react";
+import { Grid } from "./Grid";
 import { graphqlClient, config } from "./graphqlClient";
 import { useSession, useSessionOutsideReact } from "./SessionContext";
 
 interface FormProps {
   objectId: string;
-  images: string[];
+  objectArgs: any;
   isOpen: boolean;
   tagName: string | null;
   onClose: () => void;
   onDownload: (selectedImages: string[]) => void;
 }
 
-const Form: React.FC<FormProps> = ({
-  objectId,
-  images,
-  isOpen,
-  tagName,
-  onClose,
-  onDownload,
-}) => {
-  //if (!isOpen) return null;
+const Form: React.FC<FormProps> = ({ objectId, objectArgs, isOpen, tagName, onClose, onDownload }) => {
   if (!isOpen /* || !tagName*/) return null;
-  const [rowData, setRowData] = useState([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  useEffect(() => {
-    formFetchData(objectId, images, setRowData);
-  }, []);
 
   const handleCellClick = async (imageUrl: string) => {
     try {
@@ -48,34 +34,23 @@ const Form: React.FC<FormProps> = ({
     }
   };
 
-  if (!isOpen /*|| !tagName*/) return null;
-
+  //if (!isOpen /*|| !tagName*/) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
       {selectedImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90"
-          onClick={() => setSelectedImage(null)}
-        >
-          <img
-            src={selectedImage}
-            alt="Full view"
-            className="max-w-full max-h-full"
-          />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90" onClick={() => setSelectedImage(null)}>
+          <img src={selectedImage} alt="Full view" className="max-w-full max-h-full" />
         </div>
       )}
       <div className="relative p-4 bg-white rounded shadow-lg max-w-2xl w-full ag-theme-alpine">
-        <button
-          className="absolute top-4 right-4 text-gray-700 hover:text-gray-900 text-2xl"
-          onClick={onClose}
-        >
+        <button className="absolute top-4 right-4 text-gray-700 hover:text-gray-900 text-2xl" onClick={onClose}>
           ✕
         </button>
         <h2 className="text-lg font-semibold mb-4">Image Form</h2>
 
         <Grid
           objectId={objectId}
-          rowData={rowData || []}
+          objectArgs={objectArgs}
           gridParam={{ multiSelect: true }}
           onSelectionChanged={
             (selectedRows) => onDownload(selectedRows)

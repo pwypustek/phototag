@@ -1,15 +1,15 @@
-// Grid.tsx
-import React, { useMemo, useCallback } from "react";
+import { forwardRef, useImperativeHandle, useEffect, useMemo, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import { FaDownload } from "react-icons/fa";
 import { RowSelectionOptions } from "@ag-grid-community/core";
-import { FaCamera, FaFolderOpen } from "react-icons/fa";
+import { fetchColumnDefs, fetchData } from "./Data";
+import { useSession } from "./SessionContext";
 
 interface GridProps {
   objectId: string;
-  rowData: any[];
+  objectArgs: any;
+  gridRefresh?: () => void;
   onSelectionChanged?: (selectedRow: any) => void;
   onCellClicked?: (image: string) => void;
 
@@ -19,160 +19,83 @@ interface GridProps {
   onClose?: () => void;
 }
 
-const Grid: React.FC<GridProps> = ({
-  objectId,
-  rowData,
-  onSelectionChanged,
-  onCellClicked,
-  gridParam = {},
-  takePhoto,
-  browse,
-  onClose,
-}) => {
-  const rowHeight = 60;
-  let headerHeight;
-  if (gridParam.header) {
-    headerHeight = 50;
-  } else {
-    headerHeight = 0;
-  }
+interface GridRef {
+  Refresh: () => void;
+}
 
-  const columnDefs = useMemo(() => {
-    switch (objectId) {
-      case "taggrid":
-        return [
-          {
-            headerName: "Tag",
-            field: "tag",
-            flex: true,
-            cellStyle: { paddingLeft: 0, paddingRight: 0 },
-            cellRenderer: (params: any) => (
-              <button
-                className="flex items-center w-full p-2 text-white bg-green-500 rounded hover:bg-blue-700"
-                onClick={() => takePhoto?.(params.data.tag)}
-              >
-                <FaCamera className="text-3xl mr-1" />
-                {params.data.tag}
-              </button>
-            ),
-          },
-          {
-            headerName: "Browse",
-            field: "count",
-            width: 100,
-            cellStyle: { paddingLeft: 0, paddingRight: 0 },
-            cellRenderer: (params: any) => (
-              <button
-                className="relative flex items-center justify-center w-full h-full p-2 text-white bg-yellow-500 rounded hover:bg-blue-700"
-                onClick={() => browse?.(params.data.tag)}
-              >
-                <FaFolderOpen className="text-3xl mr-1" />
-                {params.data.count}
-              </button>
-            ),
-          },
-        ];
-      case "imageGallery":
-        return [
-          {
-            headerName: "Image",
-            field: "imageUrl",
-            width: 100,
-            cellStyle: { paddingLeft: 0, paddingRight: 0 },
-            cellRenderer: (params: any) => (
-              <img
-                src={params.value}
-                // style={{
-                //   /*width: "100%", */ height: "100%" /*maxHeight: "150px"*/,
-                // }}
-                alt="Gallery"
-                className="cursor-pointer" //w-16 h-16
-                onClick={() => {
-                  if (onCellClicked) {
-                    //params.data.name
-                    onCellClicked(params.data.name);
-                  } else {
-                    alert("Błąd otwarcia zdjęcia");
-                  }
-                }}
-              />
-            ),
-          },
-          {
-            headerName: "Download",
-            field: "download",
-            width: 100,
-            cellStyle: { paddingLeft: 0, paddingRight: 0 },
-            cellRenderer: (params: any) => {
-              const downloadImage = () => {
-                const link = document.createElement("a");
-                link.href = params.data.imageUrl;
-                link.download = `image-${params.data.name}.jpg`;
-                link.click();
-              };
-              return (
-                <button
-                  className="relative flex items-center justify-center w-full h-full p-2 text-white bg-yellow-500 rounded hover:bg-blue-700"
-                  onClick={downloadImage}
-                >
-                  <FaDownload className="text-2xl" />
-                </button>
-              );
-            },
-          },
-          {
-            headerName: "Name",
-            field: "name",
-            width: 300,
-            cellStyle: { paddingLeft: 0, paddingRight: 0 },
-            cellRenderer: (params: any) => {
-              return params.value;
-            },
-          },
+const Grid = forwardRef<GridRef, GridProps>(({ objectId, objectArgs, gridRefresh, /*rowData,*/ onSelectionChanged, onCellClicked, gridParam = {}, takePhoto, browse, onClose }, ref) => {
+  const [columnDefs, setColumnDefs] = useState<any[]>([]);
+  const [rowDataTag, setRowDataTag] = useState([]);
+  const { username, sessionId, cwid, isLoggedIn } = useSession();
 
-          // {
-          //   cellRenderer: (params: any) => (
-          //     <button onClick={() => downloadImage(params.value)}>
-          //       <FaDownload />
-          //     </button>
-          //   ),
-          // },
-        ];
-
-      case "settings":
-        return [
-          {
-            headerName: "Param",
-            field: "param",
-            width: 200,
-            cellStyle: { paddingLeft: 0, paddingRight: 0 },
-            cellRenderer: (params: any) => <div>{params.value}</div>,
-          },
-          {
-            headerName: "Value",
-            field: "value",
-            width: 200,
-            cellStyle: { paddingLeft: 0, paddingRight: 0 },
-            cellRenderer: (params: any) => <div>{params.value}</div>,
-          },
-
-          // {
-          //   cellRenderer: (params: any) => (
-          //     <button onClick={() => downloadImage(params.value)}>
-          //       <FaDownload />
-          //     </button>
-          //   ),
-          // },
-        ];
-
-      default:
-        return [];
+  const Refresh = () => {
+    if (isLoggedIn) {
+      fetchData(objectId, objectArgs, username, (data) => {
+        console.log("Updating rowDataTag");
+        setRowDataTag(data);
+      });
     }
-  }, [objectId, takePhoto, browse]);
+  };
 
-  const rowSelection = useMemo<
-    RowSelectionOptions | "single" | "multiple"
-  >(() => {
+  // Eksponowanie metody Refresh
+  useImperativeHandle(ref, () => ({
+    Refresh,
+  }));
+
+  // Dodatkowy Kontekst
+  // W AgGrid, pole context jest mechanizmem umożliwiającym przekazywanie niestandardowych danych lub funkcji do rendererów komórek (cellRenderer).
+  // Dzięki temu renderer wie, jakie operacje wykonać (np. takePhoto, browse) dla danej komórki.
+  useEffect(() => {
+    const loadColumnDefs = async () => {
+      const defs = await fetchColumnDefs(objectId);
+
+      // 1. Dodanie kontekstu do każdej kolumny
+      const enhancedDefs = defs.map((def: any) => {
+        //Iterujemy po tablicy defs (zawierającej definicje kolumn) i tworzymy nową tablicę, gdzie każda kolumna (def) jest wzbogacona o dodatkowe pole context.
+        return {
+          ...def, // Zachowujemy oryginalne właściwości kolumny, Rozwinięcie właściwości (...def):
+          // Operator rozproszenia (...) kopiuje wszystkie istniejące właściwości obiektu def do nowego obiektu.
+          // Dzięki temu nie musimy ręcznie wymieniać każdej właściwości kolumny.
+          context: {
+            takePhoto, // Funkcja przekazana z propsów
+            browse, // Funkcja przekazana z propsów
+            onCellClicked, // Funkcja przekazana z propsów
+          },
+        };
+      });
+
+      // 2. Ustawienie zaktualizowanych definicji kolumn w stanie
+      setColumnDefs(enhancedDefs);
+
+      // poniżej bez refaktoringu
+      // setColumnDefs(
+      //   defs.map((def) => ({
+      //     ...def,
+      //     context: { takePhoto, browse, onCellClicked },
+      //   }))
+      // );
+
+      // jak tutaj jest wywołane to jakoś wolniej wczytuje, jest widoczne opóźnenie
+      // if (isLoggedIn) {
+      //   fetchData(objectId, objectArgs, username, (data) => {
+      //     console.log("Updating rowDataTag"); // <- Render na zmianę `rowDataTag`
+      //     setRowDataTag(data);
+      //   });
+      // }
+    };
+    loadColumnDefs();
+  }, [objectId, objectArgs, gridRefresh, takePhoto, browse, onCellClicked]);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchData(objectId, objectArgs, username, (data) => {
+        console.log("Updating rowDataTag"); // <- Render na zmianę `rowDataTag`
+        setRowDataTag(data);
+      });
+    }
+  }, []);
+
+  const rowSelection = useMemo<RowSelectionOptions | "single" | "multiple">(() => {
     if (gridParam.multiSelect == true) {
       return {
         mode: "multiRow",
@@ -188,21 +111,22 @@ const Grid: React.FC<GridProps> = ({
     }
   }, []);
 
-  // const downloadImage = (url: string) => {
-  //   const link = document.createElement("a");
-  //   link.href = url;
-  //   link.download = "downloaded-image.jpg";
-  //   link.click();
-  // };
+  const rowHeight = 60;
+  let headerHeight;
+  if (gridParam.header) {
+    headerHeight = 50;
+  } else {
+    headerHeight = 0;
+  }
+  if (objectId == "settings") {
+    headerHeight = 50;
+  }
 
   return (
     //<div className="ag-theme-alpine" style={{ height: "100%", width: "100%" }}>
-    <div
-      className="ag-theme-alpine h-full w-full"
-      style={{ height: "calc(100vh - 148px)" }}
-    >
+    <div className="ag-theme-alpine h-full w-full" style={{ height: "calc(100vh - 148px)" }}>
       <AgGridReact
-        rowData={rowData}
+        rowData={rowDataTag}
         columnDefs={columnDefs as never}
         headerHeight={headerHeight}
         rowHeight={rowHeight}
@@ -213,6 +137,6 @@ const Grid: React.FC<GridProps> = ({
       />
     </div>
   );
-};
+});
 
-export default Grid;
+export { Grid, type GridRef };

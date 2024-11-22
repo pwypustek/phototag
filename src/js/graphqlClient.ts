@@ -57,24 +57,24 @@ const graphqlClient = async (method: string, params: any) => {
 
     if (!response.ok) {
       alert(`GraphQL error`);
-      throw new Error(
-        `GraphQL error: ${response.status} ${response.statusText}`,
-      );
+      throw new Error(`GraphQL error: ${response.status} ${response.statusText}`);
     }
 
     const responseData = await response.json();
 
     if (responseData.errors) {
-      const errText = responseData.errors
-        .map((error: { message: any }) => error.message)
-        .join("\n");
+      const errText = responseData.errors.map((error: { message: any }) => error.message).join("\n");
       console.log(errText);
       throw new Error(errText);
     }
 
     return responseData.data;
-  } catch (error) {
-    throw error;
+  } catch (error: any) {
+    if (error.message) {
+      throw error.message;
+    } else {
+      throw error;
+    }
   }
 };
 

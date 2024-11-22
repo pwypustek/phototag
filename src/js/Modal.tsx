@@ -8,12 +8,7 @@ interface ModalProps {
   message?: string;
   defaultValue?: string;
   defaultTagType?: string;
-  resolve: (
-    value:
-      | { value?: string; selectedTagType?: string }
-      | { value: string }
-      | null
-  ) => void;
+  resolve: (value: { value?: string; selectedTagType?: string } | { value: string } | null) => void;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -32,10 +27,7 @@ const Modal: React.FC<ModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      if (
-        (type === "prompt" || type === "promptWithTagType") &&
-        inputRef.current
-      ) {
+      if ((type === "prompt" || type === "promptWithTagType") && inputRef.current) {
         inputRef.current.focus();
       }
       setValue(defaultValue);
@@ -51,10 +43,7 @@ const Modal: React.FC<ModalProps> = ({
   };
 
   const handleSubmit = () => {
-    const result =
-      type === "promptWithTagType"
-        ? { value, selectedTagType: selectedOption }
-        : { value };
+    const result = type === "promptWithTagType" ? { value, selectedTagType: selectedOption } : { value };
     resolve(result);
     onClose();
   };
@@ -71,94 +60,47 @@ const Modal: React.FC<ModalProps> = ({
         {type === "confirm" ? (
           <>
             <p className="mb-4 text-lg">{message}</p>
-            <button
-              className="w-full p-2 text-white bg-blue-500 rounded hover:bg-blue-700"
-              onClick={() => handleConfirm(true)}
-            >
+            <button className="w-full p-2 text-white bg-blue-500 rounded hover:bg-blue-700" onClick={() => handleConfirm(true)}>
               Potwierdź
             </button>
-            <button
-              className="w-full p-2 mt-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
-              onClick={() => handleConfirm(false)}
-            >
+            <button className="w-full p-2 mt-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300" onClick={() => handleConfirm(false)}>
               Anuluj
             </button>
           </>
         ) : type === "alert" ? (
           <>
             <p className="mb-4 text-lg">{message}</p>
-            <button
-              className="w-full p-2 text-white bg-blue-500 rounded hover:bg-blue-700"
-              onClick={() => handleConfirm(true)}
-            >
+            <button className="w-full p-2 text-white bg-blue-500 rounded hover:bg-blue-700" onClick={() => handleConfirm(true)}>
               OK
             </button>
           </>
         ) : type === "prompt" ? (
           <>
-            <input
-              type="text"
-              ref={inputRef}
-              className="w-full p-2 mb-4 border border-gray-300 rounded"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-            />
-            <button
-              className="w-full p-2 text-white bg-blue-500 rounded hover:bg-blue-700"
-              onClick={handleSubmit}
-            >
+            <input type="text" ref={inputRef} className="w-full p-2 mb-4 border border-gray-300 rounded" value={value} onChange={(e) => setValue(e.target.value)} />
+            <button className="w-full p-2 text-white bg-blue-500 rounded hover:bg-blue-700" onClick={handleSubmit}>
               Zatwierdź
             </button>
-            <button
-              className="w-full p-2 mt-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
-              onClick={handleCancel}
-            >
+            <button className="w-full p-2 mt-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300" onClick={handleCancel}>
               Anuluj
             </button>
           </>
         ) : type === "promptWithTagType" ? (
           <>
-            <input
-              type="text"
-              ref={inputRef}
-              className="w-full p-2 mb-4 border border-gray-300 rounded"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-            />
-            <select
-              className="w-full p-2 mb-4 border border-gray-300 rounded"
-              value={selectedOption}
-              onChange={(e) => setSelectedOption(e.target.value)}
-            >
+            <input type="text" ref={inputRef} className="w-full p-2 mb-4 border border-gray-300 rounded" value={value} onChange={(e) => setValue(e.target.value)} />
+            <select className="w-full p-2 mb-4 border border-gray-300 rounded" value={selectedOption} onChange={(e) => setSelectedOption(e.target.value)}>
               <option value="Brak kategorii">Brak kategorii</option>
-              <option value="Budżet domowy">
-                Gdzie jest kasa? (Budżet domowy)
-              </option>
-              <option value="Kontrola alergenów">
-                Znowu jakieś gówno (Kontrola alergenów)
-              </option>
-              <option value="Dane medyczne">
-                Jak tam zdrówko (Dane medyczne)
-              </option>
+              <option value="Budżet domowy">Gdzie jest kasa? (Budżet domowy)</option>
+              <option value="Kontrola alergenów">Znowu jakieś gówno (Kontrola alergenów)</option>
+              <option value="Dane medyczne">Jak tam zdrówko (Dane medyczne)</option>
               <option value="Firma">Jebać system (Firma)</option>
-              <option value="Remont lub budowa">
-                Jak to było? (Remont lub budowa)
-              </option>
-              <option value="Inwentarz domowy">
-                Sierściuch i inne gady(Inwentarz domowy)
-              </option>
+              <option value="Remont lub budowa">Jak to było? (Remont lub budowa)</option>
+              <option value="Inwentarz domowy">Sierściuch i inne gady(Inwentarz domowy)</option>
               <option value="Wakacje">Kiedy to było (Wakacje)</option>
             </select>
-            <button
-              className="w-full p-2 text-white bg-blue-500 rounded hover:bg-blue-700"
-              onClick={handleSubmit}
-            >
+            <button className="w-full p-2 text-white bg-blue-500 rounded hover:bg-blue-700" onClick={handleSubmit}>
               Zatwierdź
             </button>
-            <button
-              className="w-full p-2 mt-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
-              onClick={handleCancel}
-            >
+            <button className="w-full p-2 mt-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300" onClick={handleCancel}>
               Anuluj
             </button>
           </>
@@ -169,19 +111,10 @@ const Modal: React.FC<ModalProps> = ({
 };
 
 export const useModal = () => {
-  const [modalState, setModalState] = useState<Omit<
-    ModalProps,
-    "isOpen" | "onClose" | "resolve"
-  > | null>(null);
-  const [promiseResolver, setPromiseResolver] = useState<
-    | ((value: { value?: string; selectedTagType?: string } | null) => void)
-    | null
-  >(null);
+  const [modalState, setModalState] = useState<Omit<ModalProps, "isOpen" | "onClose" | "resolve"> | null>(null);
+  const [promiseResolver, setPromiseResolver] = useState<((value: { value?: string; selectedTagType?: string } | null) => void) | null>(null);
 
-  const openModal = (
-    title: string,
-    options: Omit<ModalProps, "isOpen" | "onClose" | "title" | "resolve">
-  ) => {
+  const openModal = (title: string, options: Omit<ModalProps, "isOpen" | "onClose" | "title" | "resolve">) => {
     return new Promise((resolve) => {
       setModalState({ ...options, title });
       setPromiseResolver(() => resolve);

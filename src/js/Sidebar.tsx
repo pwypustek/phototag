@@ -5,36 +5,22 @@ const Sidebar: React.FC = () => {
   const [activeMenus, setActiveMenus] = useState<string[]>([]);
 
   const toggleMenu = (menu: string) => {
-    setActiveMenus((prev) =>
-      prev.includes(menu) ? prev.filter((m) => m !== menu) : [...prev, menu]
-    );
+    setActiveMenus((prev) => (prev.includes(menu) ? prev.filter((m) => m !== menu) : [...prev, menu]));
   };
 
   return (
-    <div
-      className={`${
-        isCollapsed ? "w-16" : "w-64"
-      } h-screen bg-gray-800 text-white transition-all duration-300 flex flex-col`}
-    >
+    <div className={`${isCollapsed ? "w-16" : "w-64"} h-screen bg-gray-800 text-white transition-all duration-300 flex flex-col`}>
       {/* Toggle Sidebar Button */}
-      <button
-        className="p-4 text-lg bg-gray-900 hover:bg-gray-700"
-        onClick={() => setIsCollapsed(!isCollapsed)}
-      >
+      <button className="p-4 text-lg bg-gray-900 hover:bg-gray-700" onClick={() => setIsCollapsed(!isCollapsed)}>
         {isCollapsed ? "➤" : "❮"}
       </button>
 
       {/* Menu Items */}
       <ul className="flex-1 overflow-y-auto">
         <li>
-          <button
-            className="w-full p-4 text-left hover:bg-gray-700 flex items-center"
-            onClick={() => toggleMenu("menu1")}
-          >
+          <button className="w-full p-4 text-left hover:bg-gray-700 flex items-center" onClick={() => toggleMenu("menu1")}>
             <span className="flex-grow">Menu 1</span>
-            {!isCollapsed && (
-              <span>{activeMenus.includes("menu1") ? "▲" : "▼"}</span>
-            )}
+            {!isCollapsed && <span>{activeMenus.includes("menu1") ? "▲" : "▼"}</span>}
           </button>
           {activeMenus.includes("menu1") && (
             <ul className="pl-4">
@@ -45,14 +31,9 @@ const Sidebar: React.FC = () => {
           )}
         </li>
         <li>
-          <button
-            className="w-full p-4 text-left hover:bg-gray-700 flex items-center"
-            onClick={() => toggleMenu("menu2")}
-          >
+          <button className="w-full p-4 text-left hover:bg-gray-700 flex items-center" onClick={() => toggleMenu("menu2")}>
             <span className="flex-grow">Menu 2</span>
-            {!isCollapsed && (
-              <span>{activeMenus.includes("menu2") ? "▲" : "▼"}</span>
-            )}
+            {!isCollapsed && <span>{activeMenus.includes("menu2") ? "▲" : "▼"}</span>}
           </button>
           {activeMenus.includes("menu2") && (
             <ul className="pl-4">
@@ -64,9 +45,7 @@ const Sidebar: React.FC = () => {
       </ul>
 
       {/* Footer */}
-      <div className="p-4 bg-gray-900">
-        {!isCollapsed && <span>photoTag</span>}
-      </div>
+      <div className="p-4 bg-gray-900">{!isCollapsed && <span>photoTag</span>}</div>
     </div>
   );
 };

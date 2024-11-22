@@ -6,12 +6,7 @@ type SessionContextType = {
   username: string | null;
   sessionId: string | null;
   cwid: string | null;
-  setLoginStatus: (
-    status: boolean,
-    username: string | null,
-    sessionId: string | null,
-    cwid: string | null
-  ) => void;
+  setLoginStatus: (status: boolean, username: string | null, sessionId: string | null, cwid: string | null) => void;
   logout: () => void;
   browse: (tag: string) => void;
 };
@@ -27,9 +22,7 @@ export const useSessionOutsideReact = () => {
   return sessionData;
 };
 
-export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -37,12 +30,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [isGalleryOpen, setGalleryOpen] = useState(false);
 
-  const setLoginStatus = (
-    status: boolean,
-    username: string | null,
-    sessionId: string | null,
-    cwid: string | null
-  ) => {
+  const setLoginStatus = (status: boolean, username: string | null, sessionId: string | null, cwid: string | null) => {
     setIsLoggedIn(status);
     setUsername(username);
     setSessionId(sessionId);
@@ -88,11 +76,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
   // Save the context data to the global variable
   sessionData = contextValue;
 
-  return (
-    <SessionContext.Provider value={contextValue}>
-      {children}
-    </SessionContext.Provider>
-  );
+  return <SessionContext.Provider value={contextValue}>{children}</SessionContext.Provider>;
 };
 
 export const useSession = () => {

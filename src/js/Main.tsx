@@ -5,10 +5,10 @@ import { CameraSource, Camera, CameraResultType } from "@capacitor/camera";
 import { graphqlClient, config } from "./graphqlClient";
 import { useSession } from "./SessionContext";
 import { useModal } from "./Modal";
-import Grid from "./Grid";
+import { Grid, GridRef } from "./Grid";
 import Form from "./Form";
 import { FaPlus, FaEdit, FaTrash, FaDownload } from "react-icons/fa";
-import { fetchTags, parseTagFolderName } from "./Data";
+import { fetchData, parseTagFolderName } from "./Data";
 
 interface FooterProps {
   onCreateTag: () => void;
@@ -19,10 +19,12 @@ const Main = (addTab: any) => {
   const { ModalComponent, openModal } = useModal();
   //const imageRef = useRef<HTMLImageElement | null>(null);
   const { username, sessionId, cwid } = useSession();
-  const [rowDataTag, setRowDataTag] = useState([]);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [formImages, setFormImages] = useState<string[]>([]);
   const [formObjectId, setFormObjectId] = useState<string>("");
+  const [formObjectArgs, setFormObjectArgs] = useState<any>({});
+
+  //  const [gridRefresh, setGridRefresh] = useState<any>(null);
+
   const [isFormOpen, setFormOpen] = useState(false);
 
   // from Title
@@ -32,10 +34,15 @@ const Main = (addTab: any) => {
 
   useEffect(() => {
     SplashScreen.hide();
-    if (isLoggedIn) {
-      fetchTags("", username, setRowDataTag);
-    }
   }, []);
+
+  const gridRef = useRef<GridRef>(null);
+
+  const handleGridRefresh = () => {
+    if (gridRef.current) {
+      gridRef.current.Refresh();
+    }
+  };
 
   const takePhoto = async (tag: string) => {
     try {
@@ -68,9 +75,7 @@ const Main = (addTab: any) => {
 
       if (photo.path || photo.webPath) {
         // Odczytaj plik jako Base64
-        const base64Data = await convertFileToBase64(
-          String(photo.path || photo.webPath)
-        );
+        const base64Data = await convertFileToBase64(String(photo.path || photo.webPath));
 
         await graphqlClient(`photo`, {
           type: "upload",
@@ -82,22 +87,23 @@ const Main = (addTab: any) => {
       } else {
         alert("Error photo path");
       }
-
-      fetchTags("", username, setRowDataTag);
+      handleGridRefresh();
     } catch (e) {
-      alert(`Error taking photo: ${String(e)}`);
+      //alert(`Error taking photo: ${String(e)}`);
+      if (String(e).indexOf("User cancelled photos app") >= 0) {
+        // nie pokazuj zbednego komunikatu
+      } else {
+        await openModal("User cancelled", { type: "alert" });
+      }
     }
   };
 
   const browse = async (tag: string) => {
     try {
-      const result = await graphqlClient(`photo`, {
-        type: "browse",
-        user: username,
-        tag: tag,
-      });
+      console.log("Browsing, setting formObjectId and formImages."); // <- Render na zmianę `formObjectId` i `formImages`
       setFormObjectId("imageGallery");
-      setFormImages(result.photo.images || []);
+      setFormObjectArgs({ tag: tag });
+      //setFormObjectArgs({ images: result.photo.images });
       setFormOpen(true);
     } catch (error) {
       alert("Error browsing photos:" + JSON.stringify(error));
@@ -114,8 +120,8 @@ const Main = (addTab: any) => {
   };
 
   const closeForm = () => {
+    console.log("Closing form.");
     setFormOpen(false);
-    setFormImages([]);
   };
 
   const handleCreateTag = async () => {
@@ -125,16 +131,13 @@ const Main = (addTab: any) => {
         defaultValue: "",
       });
       if (ret?.value) {
-        let tagName =
-          ret.selectedTagType == "Brak kategorii"
-            ? `${ret.value}`
-            : `[${ret.selectedTagType}] ${ret.value}`;
+        let tagName = ret.selectedTagType == "Brak kategorii" ? `${ret.value}` : `[${ret.selectedTagType}] ${ret.value}`;
         tagName = await graphqlClient(`photo`, {
           type: "tag_create",
           user: username,
           tag: tagName,
         });
-        await fetchTags("", username, setRowDataTag);
+        handleGridRefresh();
       }
     } catch (error) {
       alert(`Failed to add new tag: ${JSON.stringify(error)}`);
@@ -155,15 +158,9 @@ const Main = (addTab: any) => {
       defaultValue: tagName,
       defaultTagType: tagType,
     });
-    if (
-      (ret?.value && ret?.value !== tagName) ||
-      (ret?.selectedTagType && ret?.selectedTagType !== tagType)
-    ) {
+    if ((ret?.value && ret?.value !== tagName) || (ret?.selectedTagType && ret?.selectedTagType !== tagType)) {
       try {
-        let tagNameNew =
-          ret.selectedTagType == "Brak kategorii"
-            ? `${ret.value}`
-            : `[${ret.selectedTagType}] ${ret.value}`;
+        let tagNameNew = ret.selectedTagType == "Brak kategorii" ? `${ret.value}` : `[${ret.selectedTagType}] ${ret.value}`;
 
         await graphqlClient(`photo`, {
           type: "tag_update",
@@ -171,7 +168,7 @@ const Main = (addTab: any) => {
           prevtag: selectedTag,
           tag: tagNameNew,
         });
-        fetchTags("", username, setRowDataTag);
+        handleGridRefresh();
       } catch (error) {
         alert(`Failed to update tag: ${JSON.stringify(error)}`);
       }
@@ -188,20 +185,17 @@ const Main = (addTab: any) => {
       return;
     }
     try {
-      const ret: any = await openModal(
-        `Usunąć ${selectedTag}, czy jesteś pewien?`,
-        {
-          type: "confirm",
-          message: "Czy na pewno chcesz usunąć?",
-        }
-      );
+      const ret: any = await openModal(`Usunąć ${selectedTag}, czy jesteś pewien?`, {
+        type: "confirm",
+        message: "Czy na pewno chcesz usunąć?",
+      });
       if (ret?.value === "confirmed") {
         await graphqlClient(`photo`, {
           type: "tag_delete",
           user: username,
           tag: selectedTag,
         });
-        fetchTags("", username, setRowDataTag);
+        handleGridRefresh();
       }
     } catch (error) {
       alert(`Failed to delete tag: ${JSON.stringify(error)}`);
@@ -209,6 +203,7 @@ const Main = (addTab: any) => {
   };
 
   const toggleDropdown = () => {
+    console.log("Toggling dropdown:", !isDropdownOpen);
     setDropdownOpen(!isDropdownOpen);
   };
 
@@ -247,7 +242,8 @@ const Main = (addTab: any) => {
         //   }
         // `);
         setFormObjectId("settings");
-        setFormImages(/*result.photo.images ||*/ []);
+        //setFormObjectArgs({ images: result.photo.images });
+        //setFormImages(/*result.photo.images ||*/ []);
         setFormOpen(true);
       } catch (error) {
         console.error("Error browsing photos:", error);
@@ -270,6 +266,10 @@ const Main = (addTab: any) => {
     }
   };
 
+  const renders = useRef(0);
+  renders.current += 1;
+  console.log(`main render count: ${renders.current} isLoggedIn: ${isLoggedIn}`);
+
   return (
     <div className="font-sans block w-full h-full flex flex-col">
       <div className="relative flex justify-between p-4 bg-blue-600">
@@ -281,42 +281,23 @@ const Main = (addTab: any) => {
           </button>
           {isDropdownOpen && (
             <>
-              <div
-                className="fixed inset-0 bg-black opacity-25"
-                onClick={closeDropdown}
-              />
-              <div
-                className="absolute right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg w-48"
-                style={{ top: "calc(100% - 2px)", zIndex: 50 }}
-              >
-                <button
-                  className="absolute top-1 left-1 text-gray-500 hover:text-gray-700 text-2xl"
-                  onClick={closeDropdown}
-                >
+              <div className="fixed inset-0 bg-black opacity-25" onClick={closeDropdown} />
+              <div className="absolute right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg w-48" style={{ top: "calc(100% - 2px)", zIndex: 50 }}>
+                <button className="absolute top-1 left-1 text-gray-500 hover:text-gray-700 text-2xl" onClick={closeDropdown}>
                   ✕
                 </button>
 
                 {config.withTabs && (
                   <>
-                    <button
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full"
-                      onClick={handleOpenForm}
-                    >
+                    <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full" onClick={handleOpenForm}>
                       Nowa zakładka
                     </button>
-                    <button
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full"
-                      onClick={handleSettings}
-                    >
+                    <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full" onClick={handleSettings}>
                       Ustawienia
                     </button>
                   </>
                 )}
-
-                <button
-                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full"
-                  onClick={handleLogout}
-                >
+                <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full" onClick={handleLogout}>
                   Wyloguj
                 </button>
               </div>
@@ -326,25 +307,12 @@ const Main = (addTab: any) => {
       </div>
 
       <main className="flex-grow">
-        <Grid
-          objectId={"taggrid"}
-          rowData={rowDataTag}
-          onSelectionChanged={(selectedRow) =>
-            setSelectedTag(selectedRow ? selectedRow.tag : null)
-          }
-          takePhoto={takePhoto}
-          browse={browse}
-          gridParam={{ multiSelect: false }}
-        />
+        <Grid objectId={"taggrid"} objectArgs={{}} ref={gridRef} onSelectionChanged={(selectedRow) => setSelectedTag(selectedRow ? selectedRow.tag : null)} takePhoto={takePhoto} browse={browse} gridParam={{ multiSelect: false }} />
         {/*<p>
           <img ref={imageRef} className="max-w-full" />
         </p>*/}
       </main>
-      <Footer
-        onCreateTag={handleCreateTag}
-        onUpdateTag={handleUpdateTag}
-        onDeleteTag={handleDeleteTag}
-      />
+      <Footer onCreateTag={handleCreateTag} onUpdateTag={handleUpdateTag} onDeleteTag={handleDeleteTag} />
 
       {ModalComponent}
 
@@ -352,7 +320,7 @@ const Main = (addTab: any) => {
         <Form
           //objectId="settings"
           objectId={formObjectId}
-          images={formImages}
+          objectArgs={formObjectArgs}
           isOpen={isFormOpen}
           tagName={selectedTag}
           onClose={closeForm}
@@ -363,32 +331,19 @@ const Main = (addTab: any) => {
   );
 };
 
-const Footer: React.FC<FooterProps> = ({
-  onCreateTag,
-  onUpdateTag,
-  onDeleteTag,
-}) => (
+const Footer: React.FC<FooterProps> = ({ onCreateTag, onUpdateTag, onDeleteTag }) => (
   <div className="fixed bottom-0 flex justify-around w-full p-4 bg-blue-600 shadow-lg">
-    <button
-      className="flex items-center w-3/10 p-3 my-1 text-lg font-semibold text-white bg-green-500 rounded-full hover:bg-green-600 shadow-md transition-all duration-200"
-      onClick={onCreateTag}
-    >
+    <button className="flex items-center w-3/10 p-3 my-1 text-lg font-semibold text-white bg-green-500 rounded-full hover:bg-green-600 shadow-md transition-all duration-200" onClick={onCreateTag}>
       <FaPlus className="mr-2" />
       Nowy
     </button>
 
-    <button
-      className="flex items-center w-3/10 p-3 my-1 text-lg font-semibold text-white bg-yellow-500 rounded-full hover:bg-yellow-600 shadow-md transition-all duration-200"
-      onClick={onUpdateTag}
-    >
+    <button className="flex items-center w-3/10 p-3 my-1 text-lg font-semibold text-white bg-yellow-500 rounded-full hover:bg-yellow-600 shadow-md transition-all duration-200" onClick={onUpdateTag}>
       <FaEdit className="mr-2" />
       Popraw
     </button>
 
-    <button
-      className="flex items-center w-3/10 p-3 my-1 text-lg font-semibold text-white bg-red-500 rounded-full hover:bg-red-600 shadow-md transition-all duration-200"
-      onClick={onDeleteTag}
-    >
+    <button className="flex items-center w-3/10 p-3 my-1 text-lg font-semibold text-white bg-red-500 rounded-full hover:bg-red-600 shadow-md transition-all duration-200" onClick={onDeleteTag}>
       <FaTrash className="mr-2" />
       Usuń
     </button>
