@@ -3,6 +3,8 @@ import { Grid } from "./Grid";
 import { graphqlClient, config } from "./graphqlClient";
 import { useSession, useSessionOutsideReact } from "./SessionContext";
 
+import { Button } from "@/components/ui/button";
+
 interface FormProps {
   objectId: string;
   objectArgs: any;
@@ -60,6 +62,10 @@ const Form: React.FC<FormProps> = ({ objectId, objectArgs, isOpen, tagName, onCl
         />
 
         <div className="flex justify-around mt-4">
+          <div>
+            <Button>Click me</Button>
+          </div>
+
           {/* <button
             className="flex items-center w-3/10 p-3 my-1 text-lg font-semibold text-white bg-yellow-500 rounded-full hover:bg-yellow-600 shadow-md transition-all duration-200"
             onClick={() => onDownload(images)}

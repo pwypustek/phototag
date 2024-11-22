@@ -22,7 +22,7 @@
     /* dodane dla instalacji shadcn */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src"],

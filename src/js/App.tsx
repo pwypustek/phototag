@@ -90,38 +90,39 @@ const MainTabs = () => {
 
   return (
     <div className="flex h-screen">
-      <Sidebar />
-      <div className="flex flex-col flex-1">
-        <button
-          className="flex items-center w-3/10 p-1 my-1 text-lg font-semibold text-white bg-green-500 hover:bg-green-600 shadow-md transition-all duration-200"
-          onClick={
-            () => addTab(`Tab${String(Math.random()).substring(3, 7)}`, <Main /*isModal={false}*/ addTab={addTab} />)
-            //addTab(`Tab ${String(Math.random()).substing(0,3)}`, <Main addTab={addTab} />);
-          }
-        >
-          Add New Tab
-        </button>
+      <Sidebar>
+        <div className="flex flex-col flex-1">
+          <button
+            className="flex items-center w-3/10 p-1 my-1 text-lg font-semibold text-white bg-green-500 hover:bg-green-600 shadow-md transition-all duration-200"
+            onClick={
+              () => addTab(`Tab${String(Math.random()).substring(3, 7)}`, <Main /*isModal={false}*/ addTab={addTab} />)
+              //addTab(`Tab ${String(Math.random()).substing(0,3)}`, <Main addTab={addTab} />);
+            }
+          >
+            Add New Tab
+          </button>
 
-        <div>
-          <ul style={{ display: "flex", listStyle: "none", padding: 0 }}>
-            {tabs.map((tab) => (
-              <li
-                key={tab.id}
-                style={{
-                  marginRight: "10px",
-                  padding: "10px",
-                  cursor: "pointer",
-                  borderBottom: tab.id === activeTab ? "2px solid blue" : "none",
-                }}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                {tab.title}
-              </li>
-            ))}
-          </ul>
+          <div>
+            <ul style={{ display: "flex", listStyle: "none", padding: 0 }}>
+              {tabs.map((tab) => (
+                <li
+                  key={tab.id}
+                  style={{
+                    marginRight: "10px",
+                    padding: "10px",
+                    cursor: "pointer",
+                    borderBottom: tab.id === activeTab ? "2px solid blue" : "none",
+                  }}
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  {tab.title}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>{tabs.map((tab) => tab.id === activeTab && <div key={tab.id}>{tab.content}</div>)}</div>
         </div>
-        <div>{tabs.map((tab) => tab.id === activeTab && <div key={tab.id}>{tab.content}</div>)}</div>
-      </div>
+      </Sidebar>
     </div>
   );
 };
