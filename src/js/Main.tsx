@@ -216,7 +216,7 @@ const Main = (addTab: any) => {
         cwid: cwid,
       });
       logout();
-      navigate("/login");
+      setTimeout(() => navigate("/login"), 0);
     } catch (e) {
       openModal(String(e), { type: "alert" });
     }

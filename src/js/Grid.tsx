@@ -83,7 +83,9 @@ const Grid = forwardRef<GridRef, GridProps>(({ objectId, objectArgs, gridRefresh
       //   });
       // }
     };
-    loadColumnDefs();
+    if (isLoggedIn) {
+      loadColumnDefs();
+    }
   }, [objectId, objectArgs, gridRefresh, takePhoto, browse, onCellClicked]);
 
   useEffect(() => {

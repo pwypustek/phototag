@@ -92,10 +92,32 @@ const MainTabs = () => {
     <div className="flex h-screen">
       <Sidebar>
         <div className="flex flex-col flex-1">
-          <button
+          <Main />
+        </div>
+      </Sidebar>
+    </div>
+  );
+};
+
+function AppWrapper() {
+  return (
+    <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
+      <SessionProvider>
+        <App />
+      </SessionProvider>
+    </BrowserRouter>
+  );
+}
+
+export default AppWrapper;
+
+/*isModal={false}*/
+/*
+<button
+
             className="flex items-center w-3/10 p-1 my-1 text-lg font-semibold text-white bg-green-500 hover:bg-green-600 shadow-md transition-all duration-200"
             onClick={
-              () => addTab(`Tab${String(Math.random()).substring(3, 7)}`, <Main /*isModal={false}*/ addTab={addTab} />)
+              () => addTab(`Tab${String(Math.random()).substring(3, 7)}`, <Main addTab={addTab} />)
               //addTab(`Tab ${String(Math.random()).substing(0,3)}`, <Main addTab={addTab} />);
             }
           >
@@ -121,20 +143,4 @@ const MainTabs = () => {
             </ul>
           </div>
           <div>{tabs.map((tab) => tab.id === activeTab && <div key={tab.id}>{tab.content}</div>)}</div>
-        </div>
-      </Sidebar>
-    </div>
-  );
-};
-
-function AppWrapper() {
-  return (
-    <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
-      <SessionProvider>
-        <App />
-      </SessionProvider>
-    </BrowserRouter>
-  );
-}
-
-export default AppWrapper;
+          */

@@ -40,6 +40,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const logout = () => {
     localStorage.removeItem("sessionId");
     setIsLoggedIn(false);
+    setSessionId(null);
+    setCwid(null);
     setUsername(null);
   };
 
