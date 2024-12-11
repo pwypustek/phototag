@@ -63,7 +63,7 @@ const Form: React.FC<FormProps> = ({ objectId, objectArgs, isOpen, tagName, onCl
 
         <div className="flex justify-around mt-4">
           <div>
-            <Button>Click me</Button>
+            <Button onClick={onClose}>Zamknij</Button>
           </div>
 
           {/* <button

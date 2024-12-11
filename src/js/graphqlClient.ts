@@ -1,4 +1,4 @@
-let config: { backend: string | URL | Request; withTabs?: boolean };
+let config: { backend: string | URL | Request; withTabs?: boolean; mainApp: string };
 import { useSession, useSessionOutsideReact } from "./SessionContext";
 
 async function fetchConfig() {
@@ -8,6 +8,7 @@ async function fetchConfig() {
       throw new Error("Failed to load config.json");
     }
     config = await response.json();
+    config.mainApp = config.mainApp || "/";
   } catch (error) {
     console.error("Error loading configuration:", error);
     alert("Nie udało się załadować konfiguracji aplikacji.");
@@ -30,7 +31,7 @@ const graphqlClient = async (method: string, params: any) => {
         // sessionId i cwid jest już w parametrach
       } else {
         params[`sessionId`] = session.sessionId;
-        params[`cwid`] = "todo"; //session.cwid
+        params[`cwid`] = session.cwid;
       }
     }
 
@@ -78,4 +79,25 @@ const graphqlClient = async (method: string, params: any) => {
   }
 };
 
-export { config, graphqlClient };
+function getRandomString() {
+  let cwid = null;
+  try {
+    cwid = sessionStorage.getItem("cwid");
+    if (!cwid) {
+      // unikalny identyfikator instancji aplikacji klienta, w celu rozróżneinia otwartej strony na tą samą sesję ale w osobnych zakładkach, aktywna baza danych itp
+      //session.cwid = getRandomString();
+      let arr = new Uint8Array(10);
+      window.crypto.getRandomValues(arr);
+      cwid = Array.from(arr, function dec2hex(dec) {
+        return dec.toString(16).padStart(2, "0");
+      }).join("");
+      console.log(`cwid: ${cwid}`);
+      sessionStorage.setItem("cwid", cwid);
+    }
+  } catch (e: any) {
+    alert("(2) Twoja przeglądarka nie jest aktualna.\n\nUaktualnij lub uruchom inną przeglądarkę.\nnp. Google Chrome, Mozilla Firefox lub Microsoft Edge\n\n" + e.message);
+  }
+  return cwid;
+}
+
+export { config, graphqlClient, getRandomString };

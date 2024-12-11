@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { Login, Register, Forgot, Activate } from "./Auth";
+import { Login, Register, Forgot, Activate, Recovery } from "./Auth";
 import Main from "./Main";
 import { graphqlClient, config } from "./graphqlClient";
 import { useSession } from "./SessionContext";
@@ -12,7 +12,7 @@ function App() {
   const location = useLocation();
   const hasRedirected = useRef(false);
   const [loading, setLoading] = useState(true);
-  const { isLoggedIn, setLoginStatus } = useSession();
+  const { isLoggedIn, setLoginStatus, cwid } = useSession();
 
   useEffect(() => {
     if (hasRedirected.current) return;
@@ -20,7 +20,6 @@ function App() {
     const checkLoginStatus = async () => {
       console.log("App useEffect checkLoginStatus");
       let isLoggedInLocal = false;
-      const cwid = "todo";
       const sessionId = localStorage.getItem("sessionId");
       if (sessionId) {
         try {
@@ -36,11 +35,15 @@ function App() {
       }
 
       if (isLoggedInLocal && location.pathname !== "/register" && location.pathname !== "/activate") {
-        if (location.pathname != "/") {
-          navigate("/");
+        if (location.pathname != config.mainApp) {
+          if (config.mainApp.startsWith("http")) {
+            window.location.href = `${config.mainApp}?cwid=${cwid}`; // Zewnętrzny adres
+          } else {
+            navigate(config.mainApp); // Wewnętrzne przekierowanie
+          }
         }
         hasRedirected.current = true;
-      } else if (!isLoggedInLocal && location.pathname !== "/login" && location.pathname !== "/register" && location.pathname !== "/activate") {
+      } else if (!isLoggedInLocal && location.pathname !== "/login" && location.pathname !== "/register" && location.pathname !== "/activate" && location.pathname !== "/recovery") {
         navigate("/login");
         hasRedirected.current = true;
       }
@@ -48,7 +51,7 @@ function App() {
       setLoading(false);
     };
     checkLoginStatus();
-  }, [navigate, location, setLoginStatus, graphqlClient]);
+  }, [navigate, location, setLoginStatus /*, graphqlClient*/]);
 
   if (loading) {
     return null; // Renderowanie pustego komponentu, dopóki status logowania się ładuje
@@ -67,6 +70,7 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/activate" element={<Activate />} />
       <Route path="/forgot" element={<Forgot />} />
+      <Route path="/recovery" element={<Recovery />} />
       <Route path="/" element={mainActive} />
     </Routes>
   );

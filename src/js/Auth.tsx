@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { graphqlClient } from "./graphqlClient";
+import { graphqlClient, config } from "./graphqlClient";
 import { useSession } from "./SessionContext";
 
 function Login() {
@@ -8,7 +8,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const { setLoginStatus } = useSession();
+  const { setLoginStatus, cwid } = useSession();
 
   const handleLogin = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
@@ -18,7 +18,6 @@ function Login() {
     }
 
     try {
-      const cwid = "todo";
       const result = await graphqlClient(`auth`, {
         type: "login",
         user: email,
@@ -29,7 +28,13 @@ function Login() {
       if (result?.auth?.ok) {
         localStorage.setItem("sessionId", result.auth.sessionId);
         setLoginStatus(true, email, result.auth.sessionId, result.auth.cwid);
-        setTimeout(() => navigate("/"), 0);
+        setTimeout(() => {
+          if (config.mainApp.startsWith("http")) {
+            window.location.href = `${config.mainApp}?cwid=${cwid}`; // Zewnętrzny adres
+          } else {
+            navigate(config.mainApp); // Wewnętrzne przekierowanie
+          }
+        }, 0);
       } else {
         alert("Błąd logowania");
       }
@@ -116,12 +121,11 @@ function Register() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const { setLoginStatus } = useSession();
+  const { setLoginStatus, cwid } = useSession();
 
   const handleRegister = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     try {
-      const cwid = "todo";
       const result = await graphqlClient(`auth`, {
         type: "register",
         user: email,
@@ -130,9 +134,10 @@ function Register() {
       });
 
       if (result && result.auth && result.auth.ok === true) {
-        localStorage.setItem("sessionId", result.auth.sessionId);
-        setLoginStatus(true, email, result.auth.sessionId, result.auth.cwid);
-        setTimeout(() => navigate("/"), 0);
+        //localStorage.setItem("sessionId", result.auth.sessionId);
+        //setLoginStatus(true, email, result.auth.sessionId, result.auth.cwid);
+        alert(`Sprawdź email, aktywuj i zaloguj się`);
+        setTimeout(() => navigate("/login"), 0);
       } else {
         alert(`Registration failed: ${JSON.stringify(result.errors)}`);
       }
@@ -213,7 +218,7 @@ function Activate() {
     }
   }, []);
 
-  const { setLoginStatus } = useSession();
+  const { setLoginStatus, cwid } = useSession();
 
   const handleSendActivateLink = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
@@ -269,4 +274,111 @@ function Activate() {
   );
 }
 
-export { Login, Forgot, Register, Activate };
+function Recovery() {
+  const [password1, setPassword1] = useState("");
+  const [password2, setPassword2] = useState("");
+  const [token, setToken] = useState("");
+  const [user, setUser] = useState("");
+  const [activateProgress, setActivateProgress] = useState("phototag password recovery");
+  const navigate = useNavigate();
+
+  // const handleEmailVerification = async (user: string, token: string) => {
+  //   try {
+  //     setActivateProgress(`Weryfikacja email...`);
+  //     const result = await graphqlClient(`auth`, {
+  //       type: "recovery",
+  //       user: user,
+  //       token: token,
+  //     });
+
+  //     if (result && result.auth && result.auth.ok === true) {
+  //       //localStorage.setItem("sessionId", result.auth.sessionId);
+  //       //setLoginStatus(true, email, result.auth.sessionId, result.auth.cwid);
+  //       setActivateProgress(`Ustawiono noweg hasło`);
+  //       setTimeout(() => navigate("/login"), 1000);
+  //     } else {
+  //       //alert(`Activation failed: ${JSON.stringify(result.errors)}`);
+  //       setActivateProgress(`Recovery failed: ${JSON.stringify(result.errors)}`);
+  //     }
+
+  //     // const result = await verifyEmail({ variables: { token } });
+  //     // if (result.data.verifyEmail.success) {
+  //     //   alert('Email został zweryfikowany!');
+  //     // } else {
+  //     //   alert('Nie udało się zweryfikować e-maila.');
+  //     // }
+  //   } catch (error) {
+  //     console.error(error);
+  //     setActivateProgress(`${String(error)}`); //Wystąpił błąd podczas weryfikacji e-maila
+  //     setTimeout(() => navigate("/login"), 1000);
+  //   }
+  // };
+
+  useEffect(() => {
+    debugger;
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const user = params.get("user");
+
+    if (token && user) {
+      setToken(token);
+      setUser(user);
+    } else {
+      alert(`Nieprawidłowy link, błędne parametry: ${window.location.search}`);
+    }
+  }, []);
+
+  const handleRecovery = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    try {
+      if (password1 != password2) {
+        alert("Hasła nie są identyczne");
+        return null;
+      }
+      setActivateProgress(`Weryfikacja danych...`);
+      const result = await graphqlClient(`auth`, {
+        type: "recovery",
+        user: user,
+        token: token,
+        password: password1,
+      });
+
+      if (result && result.auth && result.auth.ok === true) {
+        setActivateProgress(`Weryfikacja ok`);
+        alert("Hasło zostało zmienione, możesz się zalogować");
+        setTimeout(() => navigate("/login"), 0);
+      } else {
+        setActivateProgress(`Błąd Weryfikacji danych`);
+        alert(`Recovery failed: ${JSON.stringify(result.errors)}`);
+      }
+    } catch (error) {
+      setActivateProgress(`Błąd odzyskiwania hasła`);
+      alert(`Error during recovery: ${JSON.stringify(error)}`);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 className="text-3xl font-extrabold text-center text-gray-900 mb-4">{activateProgress}</h1>
+
+        <form onSubmit={handleRecovery} className="space-y-4" autoComplete="on">
+          <input type="password" name="password1" placeholder="Password" value={password1} onChange={(e) => setPassword1(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" autoComplete="new-password" />
+          <input type="password" name="password2" placeholder="Password" value={password2} onChange={(e) => setPassword2(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" autoComplete="new-password" />
+          <button type="submit" className="w-full p-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">
+            Ustaw hasło
+          </button>
+        </form>
+
+        <p className="text-center text-gray-600 mt-4">
+          Already have an account?{" "}
+          <Link to="/login" className="text-blue-500 hover:underline">
+            Log in here
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export { Login, Forgot, Register, Activate, Recovery };

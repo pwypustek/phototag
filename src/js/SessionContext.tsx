@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import { graphqlClient } from "./graphqlClient";
+import { graphqlClient, getRandomString } from "./graphqlClient";
 
 type SessionContextType = {
   isLoggedIn: boolean;
@@ -26,7 +26,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [cwid, setCwid] = useState<string | null>(null);
+  const [cwid, setCwid] = useState<string | null>(getRandomString());
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [isGalleryOpen, setGalleryOpen] = useState(false);
 
