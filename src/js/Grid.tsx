@@ -45,53 +45,60 @@ const Grid = forwardRef<GridRef, GridProps>(({ objectId, objectArgs, gridRefresh
   // Dodatkowy Kontekst
   // W AgGrid, pole context jest mechanizmem umożliwiającym przekazywanie niestandardowych danych lub funkcji do rendererów komórek (cellRenderer).
   // Dzięki temu renderer wie, jakie operacje wykonać (np. takePhoto, browse) dla danej komórki.
-  useEffect(() => {
-    const loadColumnDefs = async () => {
-      const defs = await fetchColumnDefs(objectId);
+  useEffect(
+    () => {
+      const loadColumnDefs = async () => {
+        console.log(`loadColumnDefs objectId ${objectId}, objectArgs ${objectArgs}`);
+        const defs = await fetchColumnDefs(objectId);
 
-      // 1. Dodanie kontekstu do każdej kolumny
-      const enhancedDefs = defs.map((def: any) => {
-        //Iterujemy po tablicy defs (zawierającej definicje kolumn) i tworzymy nową tablicę, gdzie każda kolumna (def) jest wzbogacona o dodatkowe pole context.
-        return {
-          ...def, // Zachowujemy oryginalne właściwości kolumny, Rozwinięcie właściwości (...def):
-          // Operator rozproszenia (...) kopiuje wszystkie istniejące właściwości obiektu def do nowego obiektu.
-          // Dzięki temu nie musimy ręcznie wymieniać każdej właściwości kolumny.
-          context: {
-            takePhoto, // Funkcja przekazana z propsów
-            browse, // Funkcja przekazana z propsów
-            onCellClicked, // Funkcja przekazana z propsów
-          },
-        };
-      });
+        // 1. Dodanie kontekstu do każdej kolumny
+        const enhancedDefs = defs.map((def: any) => {
+          //Iterujemy po tablicy defs (zawierającej definicje kolumn) i tworzymy nową tablicę, gdzie każda kolumna (def) jest wzbogacona o dodatkowe pole context.
+          return {
+            ...def, // Zachowujemy oryginalne właściwości kolumny, Rozwinięcie właściwości (...def):
+            // Operator rozproszenia (...) kopiuje wszystkie istniejące właściwości obiektu def do nowego obiektu.
+            // Dzięki temu nie musimy ręcznie wymieniać każdej właściwości kolumny.
+            context: {
+              takePhoto, // Funkcja przekazana z propsów
+              browse, // Funkcja przekazana z propsów
+              onCellClicked, // Funkcja przekazana z propsów
+            },
+          };
+        });
 
-      // 2. Ustawienie zaktualizowanych definicji kolumn w stanie
-      setColumnDefs(enhancedDefs);
+        // 2. Ustawienie zaktualizowanych definicji kolumn w stanie
+        setColumnDefs(enhancedDefs);
 
-      // poniżej bez refaktoringu
-      // setColumnDefs(
-      //   defs.map((def) => ({
-      //     ...def,
-      //     context: { takePhoto, browse, onCellClicked },
-      //   }))
-      // );
+        // poniżej bez refaktoringu
+        // setColumnDefs(
+        //   defs.map((def) => ({
+        //     ...def,
+        //     context: { takePhoto, browse, onCellClicked },
+        //   }))
+        // );
 
-      // jak tutaj jest wywołane to jakoś wolniej wczytuje, jest widoczne opóźnenie
-      // if (isLoggedIn) {
-      //   fetchData(objectId, objectArgs, username, (data) => {
-      //     console.log("Updating rowDataTag"); // <- Render na zmianę `rowDataTag`
-      //     setRowDataTag(data);
-      //   });
-      // }
-    };
-    if (isLoggedIn) {
-      loadColumnDefs();
-    }
-  }, [objectId, objectArgs, gridRefresh, takePhoto, browse, onCellClicked]);
+        // jak tutaj jest wywołane to jakoś wolniej wczytuje, jest widoczne opóźnenie
+        // if (isLoggedIn) {
+        //   fetchData(objectId, objectArgs, username, (data) => {
+        //     console.log("Updating rowDataTag"); // <- Render na zmianę `rowDataTag`
+        //     setRowDataTag(data);
+        //   });
+        // }
+      };
+      if (isLoggedIn) {
+        loadColumnDefs();
+      }
+    },
+    [
+      /*objectId, objectArgs*/
+      /*, gridRefresh, takePhoto, browse, onCellClicked*/
+    ]
+  ); //
 
   useEffect(() => {
     if (isLoggedIn) {
       fetchData(objectId, objectArgs, username, (data) => {
-        console.log("Updating rowDataTag"); // <- Render na zmianę `rowDataTag`
+        console.log("fetchData"); // <- Render na zmianę `rowDataTag`
         setRowDataTag(data);
       });
     }

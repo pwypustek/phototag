@@ -3,8 +3,7 @@ import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-ro
 import { Login, Register, Forgot, Activate, Recovery } from "./Auth";
 import Main from "./Main";
 import { graphqlClient, config } from "./graphqlClient";
-import { useSession } from "./SessionContext";
-import { SessionProvider } from "./SessionContext";
+import { useSession, useSessionOutsideReact, SessionProvider } from "./SessionContext";
 import Sidebar from "./Sidebar";
 
 function App() {
@@ -12,7 +11,7 @@ function App() {
   const location = useLocation();
   const hasRedirected = useRef(false);
   const [loading, setLoading] = useState(true);
-  const { isLoggedIn, setLoginStatus, cwid } = useSession();
+  const { isLoggedIn, setLoginStatus, cwid, userJSON, sessionJSON } = useSession();
 
   useEffect(() => {
     if (hasRedirected.current) return;
@@ -20,28 +19,42 @@ function App() {
     const checkLoginStatus = async () => {
       console.log("App useEffect checkLoginStatus");
       let isLoggedInLocal = false;
-      const sessionId = localStorage.getItem("sessionId");
-      if (sessionId) {
-        try {
-          const result = await graphqlClient(`auth`, { type: "session", sessionId: sessionId, cwid: cwid });
+      const sessionId = "??????????"; //localStorage.getItem("sessionId");
+      //if (sessionId) {
+      try {
+        //console.log(`debug9  phototag sessionId: ${sessionId} cwid: ${cwid} config: ${JSON.stringify(config)}`);
+        const result = await graphqlClient(`auth`, { type: "session", sessionId: sessionId, cwid: cwid });
 
-          if (result?.auth?.ok) {
-            setLoginStatus(true, result.auth.user, sessionId, cwid);
-            isLoggedInLocal = true;
-          }
-        } catch (error) {
-          alert(`Failed to check session: ${String(error)}`);
+        if (result?.auth?.ok) {
+          setLoginStatus(true, result.auth.user, sessionId, cwid, result.auth.userJSON, result.auth.sessionJSON);
+          isLoggedInLocal = true;
         }
+      } catch (error) {
+        console.log(`Failed to check session: ${String(error)}`);
       }
+      //}
 
       if (isLoggedInLocal && location.pathname !== "/register" && location.pathname !== "/activate") {
-        if (location.pathname != config.mainApp) {
-          if (config.mainApp.startsWith("http")) {
-            window.location.href = `${config.mainApp}?cwid=${cwid}`; // Zewnętrzny adres
-          } else {
-            navigate(config.mainApp); // Wewnętrzne przekierowanie
-          }
+        //if (location.pathname != config.mainApp) {
+        const session = useSessionOutsideReact();
+        //if (session.userJSON && (session.userJSON.appActive == "fm" || session.userJSON.appActive == "pralnia")) {
+        if (session.userJSON && (session.userJSON.appActive == "fm" || session.userJSON.appActive == "pralnia") && config.mainApp && config.mainApp != "/") {
+          //if (confirm(`Wykonać przekierowanie wg mainApp?\n ${session.userJSON.appActive} config.mainApp: ${config.mainApp}`)) {
+          window.location.href = config.mainApp; // Zewnętrzny adres //?cwid=${cwid}
+          //window.location.href = `${config.mainApp}?cwid=${cwid}`; // Zewnętrzny adres
+          // } else {
+          //   navigate("/"); // Wewnętrzne przekierowanie
+          // }
+        } else {
+          navigate("/"); // Wewnętrzne przekierowanie
         }
+
+        // if (config.mainApp.startsWith("http")) {
+        //   window.location.href = `${config.mainApp}?cwid=${cwid}`; // Zewnętrzny adres
+        // } else {
+        //   navigate(config.mainApp); // Wewnętrzne przekierowanie
+        // }
+        //}
         hasRedirected.current = true;
       } else if (!isLoggedInLocal && location.pathname !== "/login" && location.pathname !== "/register" && location.pathname !== "/activate" && location.pathname !== "/recovery") {
         navigate("/login");

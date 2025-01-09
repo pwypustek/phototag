@@ -1,37 +1,39 @@
 import React, { useState } from "react";
 import { Grid } from "./Grid";
-import { graphqlClient, config } from "./graphqlClient";
+import { graphqlClient, config, LoadingIndicator } from "./graphqlClient";
 import { useSession, useSessionOutsideReact } from "./SessionContext";
-
 import { Button } from "@/components/ui/button";
 
 interface FormProps {
   objectId: string;
   objectArgs: any;
   isOpen: boolean;
-  tagName: string | null;
+  //tagName: string | null;
   onClose: () => void;
   onDownload: (selectedImages: string[]) => void;
 }
 
-const Form: React.FC<FormProps> = ({ objectId, objectArgs, isOpen, tagName, onClose, onDownload }) => {
+const Form: React.FC<FormProps> = ({ objectId, objectArgs, isOpen, /*tagName,*/ onClose, onDownload }) => {
   if (!isOpen /* || !tagName*/) return null;
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   const handleCellClick = async (imageUrl: string) => {
     try {
+      setUploadProgress(0);
       const session = useSessionOutsideReact();
       const result = await graphqlClient(`photo`, {
         type: "fullImage",
         user: session.username,
-        tag: tagName,
+        tag: objectArgs.tag,
         name: imageUrl,
       });
       //setFormImages(result.photo.images || []);
-
+      setUploadProgress(null);
       setSelectedImage(`data:image/jpeg;base64,${result.photo.fullImage}`); //
       //setSelectedImage(`data:image/jpeg;base64,${result.fullImage.base64}`); //result.photo.images
     } catch (error) {
+      setUploadProgress(null);
       alert(`Failed to fetch full image: ${JSON.stringify(error)}`);
     }
   };
@@ -39,6 +41,7 @@ const Form: React.FC<FormProps> = ({ objectId, objectArgs, isOpen, tagName, onCl
   //if (!isOpen /*|| !tagName*/) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
+      <LoadingIndicator progress={uploadProgress} />
       {selectedImage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90" onClick={() => setSelectedImage(null)}>
           <img src={selectedImage} alt="Full view" className="max-w-full max-h-full" />

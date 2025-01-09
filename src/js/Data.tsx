@@ -65,7 +65,7 @@ const fetchColumnDefs = async (objectId: string) => {
     }
     return result.photo;
   } catch (error) {
-    alert("Failed to load tags:" + JSON.stringify(error));
+    alert("Failed to load (fetchColumnDefs):" + JSON.stringify(error));
   }
 };
 
@@ -107,7 +107,7 @@ const fetchData = async (objectId: string, objectArgs: any, username: string | n
         alert(`Fetch tags zbłądziło...`);
     }
   } catch (error) {
-    alert("Failed to load tags:" + JSON.stringify(error));
+    alert("Failed to load (fetchData):" + JSON.stringify(error));
   }
 };
 

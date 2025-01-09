@@ -89,13 +89,22 @@ const Modal: React.FC<ModalProps> = ({
             <input type="text" ref={inputRef} className="w-full p-2 mb-4 border border-gray-300 rounded" value={value} onChange={(e) => setValue(e.target.value)} />
             <select className="w-full p-2 mb-4 border border-gray-300 rounded" value={selectedOption} onChange={(e) => setSelectedOption(e.target.value)}>
               <option value="Brak kategorii">Brak kategorii</option>
+              <option value="Budżet domowy">Budżet domowy</option>
+              <option value="Kontrola alergenów">Kontrola alergenów</option>
+              <option value="Dane medyczne">Dane medyczne</option>
+              <option value="Firma">Firma</option>
+              <option value="Remont lub budowa">Remont lub budowa</option>
+              <option value="Inwentarz domowy">Inwentarz domowy</option>
+              <option value="Wakacje">Wakacje</option>
+
+              {/* <option value="Brak kategorii">Brak kategorii</option>
               <option value="Budżet domowy">Gdzie jest kasa? (Budżet domowy)</option>
               <option value="Kontrola alergenów">Znowu jakieś gówno (Kontrola alergenów)</option>
               <option value="Dane medyczne">Jak tam zdrówko (Dane medyczne)</option>
               <option value="Firma">Jebać system (Firma)</option>
               <option value="Remont lub budowa">Jak to było? (Remont lub budowa)</option>
               <option value="Inwentarz domowy">Sierściuch i inne gady(Inwentarz domowy)</option>
-              <option value="Wakacje">Kiedy to było (Wakacje)</option>
+              <option value="Wakacje">Kiedy to było (Wakacje)</option> */}
             </select>
             <button className="w-full p-2 text-white bg-blue-500 rounded hover:bg-blue-700" onClick={handleSubmit}>
               Zatwierdź

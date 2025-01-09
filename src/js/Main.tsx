@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { CameraSource, Camera, CameraResultType } from "@capacitor/camera";
-import { graphqlClient, config } from "./graphqlClient";
+import { graphqlClient, config, LoadingIndicator } from "./graphqlClient";
 import { useSession } from "./SessionContext";
 import { useModal } from "./Modal";
 import { Grid, GridRef } from "./Grid";
@@ -15,6 +15,7 @@ interface FooterProps {
   onUpdateTag: () => void;
   onDeleteTag: () => void;
 }
+
 const Main = (addTab: any) => {
   const { ModalComponent, openModal } = useModal();
   //const imageRef = useRef<HTMLImageElement | null>(null);
@@ -22,13 +23,14 @@ const Main = (addTab: any) => {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [formObjectId, setFormObjectId] = useState<string>("");
   const [formObjectArgs, setFormObjectArgs] = useState<any>({});
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   //  const [gridRefresh, setGridRefresh] = useState<any>(null);
 
   const [isFormOpen, setFormOpen] = useState(false);
 
   // from Title
-  const { isLoggedIn, logout } = useSession();
+  const { isLoggedIn, logout, userJSON } = useSession();
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -46,6 +48,7 @@ const Main = (addTab: any) => {
 
   const takePhoto = async (tag: string) => {
     try {
+      //openModal("setUploadProgress", { type: "alert" });
       const photo = await Camera.getPhoto({
         source: CameraSource.Camera,
         saveToGallery: true,
@@ -54,8 +57,9 @@ const Main = (addTab: any) => {
         //którą możesz wykorzystać do odczytania nazwy pliku.
         resultType: CameraResultType.Uri, //"uri",
         //resultType: CameraResultType.Base64,
-        quality: 100, //90,
+        quality: 90, //100
       });
+      setUploadProgress(0);
 
       // Przykład użycia:
       const path = String(photo.path || photo.webPath);
@@ -77,6 +81,11 @@ const Main = (addTab: any) => {
         // Odczytaj plik jako Base64
         const base64Data = await convertFileToBase64(String(photo.path || photo.webPath));
 
+        // Symulacja postępu ładowania
+        // for (let progress = 0; progress <= 100; progress += 10) {
+        //   await new Promise((resolve) => setTimeout(resolve, 100)); // Symulacja opóźnienia
+        //   setUploadProgress(progress);
+        // }
         await graphqlClient(`photo`, {
           type: "upload",
           filename: photoFileName,
@@ -84,7 +93,9 @@ const Main = (addTab: any) => {
           user: username,
           tag: tag,
         });
+        setUploadProgress(null);
       } else {
+        setUploadProgress(null);
         alert("Error photo path");
       }
       handleGridRefresh();
@@ -209,7 +220,7 @@ const Main = (addTab: any) => {
 
   const handleLogout = async () => {
     try {
-      const sessionId = localStorage.getItem("sessionId");
+      const sessionId = "???????????"; //localStorage.getItem("sessionId");
       await graphqlClient(`auth`, {
         type: "logout",
         sessionId: sessionId,
@@ -266,14 +277,64 @@ const Main = (addTab: any) => {
     }
   };
 
+  const handleShowApiKey = () => {
+    if (userJSON?.apiKey) {
+      prompt("Klucz API", userJSON?.apiKey);
+    } else {
+      alert("Użytkownik nie posiada wygenerowanego klucza API, zgłoś administratorowi");
+    }
+  };
+
+  const handleDownloadVersioSynch = () => {
+    const url = "https://versio.org/setup/synch.exe";
+    const link = document.createElement("a"); // Tworzy link <a>
+    link.href = url; // Ustawia URL pliku do pobrania
+    link.download = "synch.exe"; // Ustawia sugerowaną nazwę pliku
+    document.body.appendChild(link); // Dodaje link do dokumentu
+    link.click(); // Wywołuje kliknięcie, by pobrać plik
+    document.body.removeChild(link); // Usuwa link po pobraniu
+    alert(`Pobieranie programu synch, sprawdź folder "Pobrane"`);
+  };
+
+  const handleDownloadManual = () => {
+    const url = "https://versio.org/setup/instrukcja_versio_phototag.pdf";
+    const link = document.createElement("a"); // Tworzy link <a>
+    link.href = url; // Ustawia URL pliku do pobrania
+    link.download = "instrukcja_versio_phototag.pdf"; // Ustawia sugerowaną nazwę pliku
+    document.body.appendChild(link); // Dodaje link do dokumentu
+    link.click(); // Wywołuje kliknięcie, by pobrać plik
+    document.body.removeChild(link); // Usuwa link po pobraniu
+    alert(`Pobieranie instrukcja_versio_phototag.pdf, sprawdź folder "Pobrane"`);
+  };
+
+  const handleAppSwitchFM = async () => {
+    await graphqlClient(`auth`, {
+      type: "appSwitch",
+      app: "fm",
+      user: username,
+    });
+    window.location.href = config.mainApp;
+  };
+
+  const handleAppSwitchPralnia = async () => {
+    await graphqlClient(`auth`, {
+      type: "appSwitch",
+      app: "pralnia",
+      user: username,
+    });
+    window.location.href = config.mainApp;
+  };
+
   const renders = useRef(0);
   renders.current += 1;
   console.log(`main render count: ${renders.current} isLoggedIn: ${isLoggedIn}`);
 
   return (
     <div className="font-sans block w-full h-full flex flex-col">
+      <LoadingIndicator progress={uploadProgress} />
+      {/* {uploadProgress !== null && <p className="mt-2 text-gray-700">Proszę czekać, dane są wysyłane...</p>} */}
       <div className="relative flex justify-between p-4 bg-blue-600">
-        <h1 className="m-0 text-sm font-semibold text-white">photoTag v0.12</h1>
+        <h1 className="m-0 text-sm font-semibold text-white">{config?.title} v0.14</h1>
         <div className="flex items-center space-x-2">
           <span className="text-white text-sm">{username}</span>
           <button className="text-white" onClick={toggleDropdown}>
@@ -282,16 +343,16 @@ const Main = (addTab: any) => {
           {isDropdownOpen && (
             <>
               <div className="fixed inset-0 bg-black opacity-25" onClick={closeDropdown} />
-              <div className="absolute right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg w-48" style={{ top: "calc(100% - 2px)", zIndex: 50 }}>
+              <div className="absolute right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg w-80" style={{ top: "calc(100% - 2px)", zIndex: 50 }}>
                 <button className="absolute top-1 left-1 text-gray-500 hover:text-gray-700 text-2xl" onClick={closeDropdown}>
                   ✕
                 </button>
-
                 {config.withTabs && (
                   <>
                     <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full" onClick={handleOpenForm}>
                       Nowa zakładka
                     </button>
+
                     <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full" onClick={handleSettings}>
                       Ustawienia
                     </button>
@@ -300,6 +361,31 @@ const Main = (addTab: any) => {
                 <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full" onClick={handleLogout}>
                   Wyloguj
                 </button>
+                <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full" onClick={handleDownloadVersioSynch}>
+                  Program "synch" dla Windows
+                </button>
+                <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full" onClick={handleDownloadManual}>
+                  Instrukcja obsługi
+                </button>
+                <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full" onClick={handleShowApiKey}>
+                  Klucz API
+                </button>
+
+                {(userJSON?.acl?.app?.includes("fm") ?? false) && (
+                  <>
+                    <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full" onClick={handleAppSwitchFM}>
+                      Faktury i magazyn
+                    </button>
+                  </>
+                )}
+
+                {(userJSON?.acl?.app?.includes("pralnia") ?? false) && (
+                  <>
+                    <button className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full" onClick={handleAppSwitchPralnia}>
+                      Pralnia
+                    </button>
+                  </>
+                )}
               </div>
             </>
           )}
@@ -322,11 +408,20 @@ const Main = (addTab: any) => {
           objectId={formObjectId}
           objectArgs={formObjectArgs}
           isOpen={isFormOpen}
-          tagName={selectedTag}
+          //tagName={selectedTag}
           onClose={closeForm}
           onDownload={handleDownloadSelected}
         />
       )}
+
+      {/* {uploadProgress !== null && (
+        <div className="progress-container">
+          <p>Ładowanie zdjęcia: {uploadProgress}%</p>
+          <div className="progress-bar">
+            <div className="progress" style={{ width: `${uploadProgress}%` }} />
+          </div>
+        </div>
+      )} */}
     </div>
   );
 };
