@@ -56,15 +56,20 @@ const Form: React.FC<FormProps> = ({ objectId, objectArgs, isOpen, /*tagName,*/ 
 
   //if (!isOpen /*|| !tagName*/) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-75        overflow-auto ">
+      {/* max-w-full max-h-full */}
+      {/* w-full  */}
+      {/* flex items-center justify-center  */}
       <LoadingIndicator progress={uploadProgress} />
       {selectedImage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90" onClick={() => setSelectedImage(null)}>
           <img src={selectedImage} alt="Full view" className="max-w-full max-h-full" />
         </div>
       )}
-      {/* <div className="relative p-4 bg-white rounded shadow-lg max-w-2xl w-full ag-theme-alpine"> */}
-      <div className="fixed inset-0 bg-white z-50 overflow-auto ag-theme-alpine">
+
+      <div className="relative p-4 bg-white rounded shadow-lg w-full ag-theme-alpine">
+        {/* max-w-2xl  */}
+        {/* <div className="fixed inset-0 bg-white z-50 overflow-auto ag-theme-alpine"> */}
         <button className="absolute top-4 right-4 text-gray-700 hover:text-gray-900 text-2xl" onClick={onClose}>
           ✕
         </button>

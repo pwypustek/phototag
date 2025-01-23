@@ -388,7 +388,8 @@ const Main = (addTab: any) => {
       <LoadingIndicator progress={uploadProgress} />
       {/* {uploadProgress !== null && <p className="mt-2 text-gray-700">Proszę czekać, dane są wysyłane...</p>} */}
       <div className="relative flex justify-between p-4 bg-blue-600">
-        <h1 className="m-0 text-sm font-semibold text-white">{config?.title} v0.14</h1>
+        <h1 className="m-0 text-sm font-semibold text-white">{config?.title}</h1>
+        {/* v0.14 */}
         <div className="flex items-center space-x-2">
           <span className="text-white text-sm">{username}</span>
           <button className="text-white" onClick={toggleDropdown}>
