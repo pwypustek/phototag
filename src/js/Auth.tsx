@@ -49,7 +49,7 @@ function Login() {
         await openModal("Błąd logowania", { type: "alert" });
       }
     } catch (error) {
-      await openModal(`Error during login: ${JSON.stringify(error)}`, { type: "alert" });
+      await openModal(`${JSON.stringify(error)}`, { type: "alert" });
       if (String(error).indexOf(`nie zostało aktywowane`) >= 0) {
         navigate("/activate");
       }
@@ -57,27 +57,100 @@ function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-3xl font-extrabold text-center text-gray-900 mb-4">{config?.title} Login</h1>
-        <form onSubmit={handleLogin} className="space-y-4" autoComplete="on">
-          <input type="email" name="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" autoComplete="username" />
-          <input type="password" name="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" autoComplete="current-password" />
-          <button type="submit" className="w-full p-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">
-            Log In
-          </button>
-        </form>
-        <p className="text-center text-gray-600 mt-4">
-          <Link to="/forgot" className="text-blue-500 hover:underline">
-            Forgot Password?
-          </Link>
-        </p>
-        <hr className="my-4" />
-        <button onClick={() => navigate("/register")} className="w-full p-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">
-          Create New Account
-        </button>
-      </div>
+    //flex items-center justify-center min-h-screen  bg-gray-100
+    <div className="bg-gray-50 text-gray-800">
+      {/* shadow-md */}
+      {/* <header className="bg-white  fixed top-0 w-full z-10">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <h1 className="text-xl font-bold text-indigo-600">versio.org</h1>
+          <nav>
+            <a href="#" className="text-gray-700 hover:text-indigo-600 px-4">
+              Zaloguj
+            </a>
+            <a href="#" className="text-gray-700 hover:text-indigo-600 px-4">
+              Zarejestruj
+            </a>
+          </nav>
+        </div>
+      </header> */}
+
+      <main className="rem_mt-20">
+        <section className="rem_bg-indigo-600 rem_text-white py-12">
+          <div className="container mx-auto flex flex-col md:flex-row items-center">
+            {/* Tekst po lewej */}
+            <div className="md:w-1/2 text-center md:text-left px-6">
+              <h3 className="text-4xl font-bold text-blue-600 mb-3">versio.org</h3>
+              <h2 className="text-4xl font-bold mb-4">Zarządzaj swoimi danymi łatwiej niż kiedykolwiek</h2>
+              <p className="text-lg mb-8">Intuicyjna aplikacja, która wspiera codzienne działania.</p>
+            </div>
+
+            {/* Formularz logowania po prawej */}
+            <div className="md:w-1/2 bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+              {/* <h1 className="text-3xl font-extrabold text-center text-gray-900 mb-4">{config?.title} Login</h1> */}
+              <form onSubmit={handleLogin} className="space-y-4 text-black" autoComplete="on">
+                <input type="email" name="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" autoComplete="username" />
+                <input type="password" name="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" autoComplete="current-password" />
+                <button type="submit" className="w-full p-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                  Log In
+                </button>
+              </form>
+              <p className="text-center text-gray-600 mt-4">
+                <Link to="/forgot" className="text-blue-500 hover:underline">
+                  Forgot Password?
+                </Link>
+              </p>
+              <hr className="my-4" />
+              <button onClick={() => navigate("/register")} className="w-full p-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">
+                Create New Account
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="container mx-auto px-6 py-12">
+          <h3 className="text-3xl font-semibold text-center mb-8">Przykładowe moduły</h3>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h4 className="text-xl font-bold mb-2">Obieg dokumentów</h4>
+              <p>Zarządzanie obiegiem dokumentów oraz zadań</p>
+            </div>
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h4 className="text-xl font-bold mb-2">Faktury magazyn</h4>
+              <p>Twórz, edytuj i zarządzaj fakturami w prosty sposób.</p>
+            </div>
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h4 className="text-xl font-bold mb-2">Obsługa pralni</h4>
+              <p>Obsługa pralni ułatwia zarządzanie odzieżą oraz ewidencją usług</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-gray-100 py-4">
+          <div className="container mx-auto px-2 text-center">
+            {/* <h3 className="text-3xl font-semibold mb-6">Dołącz do setek zadowolonych użytkowników</h3> */}
+            <p className="text-lg mb-2">Zarejestruj się już dziś i zacznij korzystać z pełni możliwości aplikacji.</p>
+            <p className="text-lg mb-2 text-red-600 font-bold">Wersja testowa (BETA) - Aplikacja jest w fazie rozwoju.</p>
+            {/* bg-yellow-300 text-yellow text-green py-2 font-semibold*/}
+            {/* <a href="#" className="bg-indigo-600 text-white py-3 px-6 rounded-lg shadow-md hover:bg-indigo-700">
+              Zarejestruj się
+            </a> */}
+          </div>
+        </section>
+      </main>
+
       {ModalComponent}
+
+      <footer className="bg-gray-800 text-white py-6">
+        <div className="container mx-auto text-center">
+          <p>versio.org &copy; 2025 </p>
+          <p className="mt-2">
+            <a href="mailto:info.versio.org@gmail.com" className="text-blue-500">
+              info.versio.org@gmail.com
+            </a>
+            <span className="text-blue-500 ml-2">+48 601-184-416</span>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
@@ -103,7 +176,7 @@ function Forgot() {
         await openModal("Wystąpił błąd", { type: "alert" });
       }
     } catch (error) {
-      await openModal(`Error during password reset: ${JSON.stringify(error)}`, { type: "alert" });
+      await openModal(`${JSON.stringify(error)}`, { type: "alert" });
     }
   };
 
@@ -155,7 +228,7 @@ function Register() {
         await openModal(`Registration failed: ${JSON.stringify(result.errors)}`, { type: "alert" });
       }
     } catch (error) {
-      await openModal(`Error during registration: ${JSON.stringify(error)}`, { type: "alert" });
+      await openModal(`${JSON.stringify(error)}`, { type: "alert" });
     }
   };
 
@@ -252,7 +325,7 @@ function Activate() {
         await openModal(`Activation failed: ${JSON.stringify(result.errors)}`, { type: "alert" });
       }
     } catch (error) {
-      await openModal(`Error during activation: ${JSON.stringify(error)}`, { type: "alert" });
+      await openModal(`${JSON.stringify(error)}`, { type: "alert" });
     }
   };
 
@@ -368,7 +441,7 @@ function Recovery() {
       }
     } catch (error) {
       setActivateProgress(`Błąd odzyskiwania hasła`);
-      await openModal(`Error during recovery: ${JSON.stringify(error)}`, { type: "alert" });
+      await openModal(`${JSON.stringify(error)}`, { type: "alert" });
     }
   };
 

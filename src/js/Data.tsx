@@ -1,7 +1,7 @@
 import { graphqlClient } from "./graphqlClient";
 import type { CustomCellRendererProps } from "@ag-grid-community/react";
 import { type FunctionComponent } from "react";
-import { FaCamera, FaFolderOpen, FaDownload } from "react-icons/fa";
+import { FaCamera, FaFolderOpen, FaDownload, FaStickyNote } from "react-icons/fa";
 
 const fetchColumnDefs = async (objectId: string) => {
   try {
@@ -27,6 +27,18 @@ const fetchColumnDefs = async (objectId: string) => {
 
         result.photo[1].cellRenderer = (params: any) => (
           <button
+            className="relative flex items-center justify-center w-full h-full p-2 text-white bg-blue-500 rounded hover:bg-blue-700"
+            onClick={() => {
+              return params.colDef.context.takeText?.(params.data.tag);
+            }}
+          >
+            <FaStickyNote className="text-3xl mr-1" />
+            {/* {params.data.tag} */}
+          </button>
+        );
+
+        result.photo[2].cellRenderer = (params: any) => (
+          <button
             className="relative flex items-center justify-center w-full h-full p-2 text-white bg-yellow-500 rounded hover:bg-blue-700"
             onClick={() => {
               return params.colDef.context.browse?.(params.data.tag);
@@ -40,8 +52,21 @@ const fetchColumnDefs = async (objectId: string) => {
 
       case "imageGallery":
         result.photo[0].cellRenderer = (params: any) => {
-          const image = `data:image/jpeg;base64,${params.data.base64String}`;
-          return <img src={image} alt="Gallery" className="cursor-pointer" onClick={() => params.colDef.context.onCellClicked?.(params.data.name)} />;
+          if (params.data.name.indexOf(".txt") >= 0) {
+            const text = decodeURIComponent(escape(atob(params.data.base64String)));
+            return (
+              <div className="w-full h-full flex items-center justify-center cursor-pointer bg-gray-100 hover:bg-gray-200" onClick={() => params.colDef.context.onCellClicked?.(params.data.name)}>
+                {text}
+              </div>
+            );
+            // return (
+            //   <div onClick={() => params.colDef.context.onCellClicked?.(params.data.name)} className="cursor-pointer">
+            //     {text}
+            //   </div>
+          } else {
+            const image = `data:image/jpeg;base64,${params.data.base64String}`;
+            return <img src={image} alt="Gallery" className="cursor-pointer" onClick={() => params.colDef.context.onCellClicked?.(params.data.name)} />;
+          }
         };
 
         /*params.value  return params.data.base64String;*/

@@ -109,6 +109,60 @@ const Main = (addTab: any) => {
     }
   };
 
+  const takeText = async (tag: string) => {
+    try {
+      //openModal("setUploadProgress", { type: "alert" });
+      // const photo = await Camera.getPhoto({
+      //   source: CameraSource.Camera,
+      //   saveToGallery: true,
+      //   //Aby uzyskać dostęp do nazwy pliku wygenerowanej przez system,
+      //   //użyj resultType: "uri". Zwróci ona ścieżkę do pliku w systemie,
+      //   //którą możesz wykorzystać do odczytania nazwy pliku.
+      //   resultType: CameraResultType.Uri, //"uri",
+      //   //resultType: CameraResultType.Base64,
+      //   quality: 90, //100
+      // });
+      //let text = prompt(`Notatka`);
+
+      const { value: text }: any = await openModal("Notatka:", {
+        type: "monaco", //prompt
+        defaultValue: "",
+      });
+      if (text) {
+        setUploadProgress(0);
+
+        // Przykład użycia:
+        //const path = String(photo.path || photo.webPath);
+
+        let arr = new Uint8Array(10);
+        window.crypto.getRandomValues(arr);
+        const filename = Array.from(arr, function dec2hex(dec) {
+          return dec.toString(16).padStart(2, "0");
+        }).join("");
+
+        // Odczytaj plik jako Base64
+        const base64Data = btoa(unescape(encodeURIComponent(text)));
+
+        await graphqlClient(`photo`, {
+          type: "uploadText",
+          filename: filename,
+          content: base64Data,
+          user: username,
+          tag: tag,
+        });
+        setUploadProgress(null);
+      }
+      handleGridRefresh();
+    } catch (e) {
+      //alert(`Error taking photo: ${String(e)}`);
+      if (String(e).indexOf("User cancelled photos app") >= 0) {
+        // nie pokazuj zbednego komunikatu
+      } else {
+        await openModal("User cancelled", { type: "alert" });
+      }
+    }
+  };
+
   const browse = async (tag: string) => {
     try {
       console.log("Browsing, setting formObjectId and formImages."); // <- Render na zmianę `formObjectId` i `formImages`
@@ -393,7 +447,7 @@ const Main = (addTab: any) => {
       </div>
 
       <main className="flex-grow">
-        <Grid objectId={"taggrid"} objectArgs={{}} ref={gridRef} onSelectionChanged={(selectedRow) => setSelectedTag(selectedRow ? selectedRow.tag : null)} takePhoto={takePhoto} browse={browse} gridParam={{ multiSelect: false }} />
+        <Grid objectId={"taggrid"} objectArgs={{}} ref={gridRef} onSelectionChanged={(selectedRow) => setSelectedTag(selectedRow ? selectedRow.tag : null)} takePhoto={takePhoto} takeText={takeText} browse={browse} gridParam={{ multiSelect: false }} />
         {/*<p>
           <img ref={imageRef} className="max-w-full" />
         </p>*/}

@@ -15,6 +15,7 @@ interface GridProps {
 
   gridParam?: Record<string, any>;
   takePhoto?: (tag: string) => void;
+  takeText?: (tag: string) => void;
   browse?: (tag: string) => void;
   onClose?: () => void;
 }
@@ -23,7 +24,7 @@ interface GridRef {
   Refresh: () => void;
 }
 
-const Grid = forwardRef<GridRef, GridProps>(({ objectId, objectArgs, gridRefresh, /*rowData,*/ onSelectionChanged, onCellClicked, gridParam = {}, takePhoto, browse, onClose }, ref) => {
+const Grid = forwardRef<GridRef, GridProps>(({ objectId, objectArgs, gridRefresh, /*rowData,*/ onSelectionChanged, onCellClicked, gridParam = {}, takePhoto, takeText, browse, onClose }, ref) => {
   const [columnDefs, setColumnDefs] = useState<any[]>([]);
   const [rowDataTag, setRowDataTag] = useState([]);
   const { username, sessionId, cwid, isLoggedIn } = useSession();
@@ -44,7 +45,7 @@ const Grid = forwardRef<GridRef, GridProps>(({ objectId, objectArgs, gridRefresh
 
   // Dodatkowy Kontekst
   // W AgGrid, pole context jest mechanizmem umożliwiającym przekazywanie niestandardowych danych lub funkcji do rendererów komórek (cellRenderer).
-  // Dzięki temu renderer wie, jakie operacje wykonać (np. takePhoto, browse) dla danej komórki.
+  // Dzięki temu renderer wie, jakie operacje wykonać (np. takePhoto, takeText, browse) dla danej komórki.
   useEffect(
     () => {
       const loadColumnDefs = async () => {
@@ -60,6 +61,7 @@ const Grid = forwardRef<GridRef, GridProps>(({ objectId, objectArgs, gridRefresh
             // Dzięki temu nie musimy ręcznie wymieniać każdej właściwości kolumny.
             context: {
               takePhoto, // Funkcja przekazana z propsów
+              takeText, // Funkcja przekazana z propsów
               browse, // Funkcja przekazana z propsów
               onCellClicked, // Funkcja przekazana z propsów
             },
@@ -73,7 +75,7 @@ const Grid = forwardRef<GridRef, GridProps>(({ objectId, objectArgs, gridRefresh
         // setColumnDefs(
         //   defs.map((def) => ({
         //     ...def,
-        //     context: { takePhoto, browse, onCellClicked },
+        //     context: { takePhoto, takeText, browse, onCellClicked },
         //   }))
         // );
 
@@ -91,7 +93,7 @@ const Grid = forwardRef<GridRef, GridProps>(({ objectId, objectArgs, gridRefresh
     },
     [
       /*objectId, objectArgs*/
-      /*, gridRefresh, takePhoto, browse, onCellClicked*/
+      /*, gridRefresh, takePhoto, takeText, browse, onCellClicked*/
     ]
   ); //
 

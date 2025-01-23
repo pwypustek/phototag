@@ -3,6 +3,7 @@ import { Grid } from "./Grid";
 import { graphqlClient, config, LoadingIndicator } from "./graphqlClient";
 import { useSession, useSessionOutsideReact } from "./SessionContext";
 import { Button } from "@/components/ui/button";
+import { useModal } from "./Modal";
 
 interface FormProps {
   objectId: string;
@@ -17,6 +18,7 @@ const Form: React.FC<FormProps> = ({ objectId, objectArgs, isOpen, /*tagName,*/ 
   if (!isOpen /* || !tagName*/) return null;
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const { ModalComponent, openModal } = useModal();
 
   const handleCellClick = async (imageUrl: string) => {
     try {
@@ -30,7 +32,21 @@ const Form: React.FC<FormProps> = ({ objectId, objectArgs, isOpen, /*tagName,*/ 
       });
       //setFormImages(result.photo.images || []);
       setUploadProgress(null);
-      setSelectedImage(`data:image/jpeg;base64,${result.photo.fullImage}`); //
+      if (result.photo.type == "text") {
+        const decodedText = decodeURIComponent(escape(atob(result.photo.fullText)));
+        //await openModal(decodedText, { type: "monaco" });
+
+        /*const { value: text }: any = */ await openModal("Notatka:", {
+          type: "monaco", //prompt
+          readonly: true,
+          defaultValue: decodedText,
+        });
+        // if (text !== decodedText) {
+        //   alert("Zmieniona zawartość niestety nie jest jeszcze zapisywana: " + text);
+        // }
+      } else {
+        setSelectedImage(`data:image/jpeg;base64,${result.photo.fullImage}`); //
+      }
       //setSelectedImage(`data:image/jpeg;base64,${result.fullImage.base64}`); //result.photo.images
     } catch (error) {
       setUploadProgress(null);
@@ -47,7 +63,8 @@ const Form: React.FC<FormProps> = ({ objectId, objectArgs, isOpen, /*tagName,*/ 
           <img src={selectedImage} alt="Full view" className="max-w-full max-h-full" />
         </div>
       )}
-      <div className="relative p-4 bg-white rounded shadow-lg max-w-2xl w-full ag-theme-alpine">
+      {/* <div className="relative p-4 bg-white rounded shadow-lg max-w-2xl w-full ag-theme-alpine"> */}
+      <div className="fixed inset-0 bg-white z-50 overflow-auto ag-theme-alpine">
         <button className="absolute top-4 right-4 text-gray-700 hover:text-gray-900 text-2xl" onClick={onClose}>
           ✕
         </button>
@@ -63,6 +80,8 @@ const Form: React.FC<FormProps> = ({ objectId, objectArgs, isOpen, /*tagName,*/ 
           }
           onCellClicked={(image: string) => handleCellClick(image)}
         />
+
+        {ModalComponent}
 
         <div className="flex justify-around mt-4">
           <div>

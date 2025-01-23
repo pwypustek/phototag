@@ -21,6 +21,7 @@
     "@capacitor/ios": "^6.1.2",
     "@capacitor/network": "^6.0.2",
     "@capacitor/splash-screen": "latest",
+    "@monaco-editor/react": "^4.6.0",
     "@radix-ui/react-collapsible": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-separator": "^1.1.0",

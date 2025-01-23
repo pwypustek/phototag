@@ -1,13 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
+import MonacoEditor, { EditorProps } from "@monaco-editor/react";
+import type monaco from "monaco-editor";
+
+//let monacoEditorInstance: monaco.editor.IStandaloneCodeEditor;
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  type: "alert" | "prompt" | "promptWithTagType" | "confirm";
+  type: "alert" | "prompt" | "promptWithTagType" | "confirm" | "monaco";
   message?: string;
   defaultValue?: string;
   defaultTagType?: string;
+  readonly?: boolean; // Dodano parametr readonly
   resolve: (value: { value?: string; selectedTagType?: string } | { value: string } | null) => void;
 }
 
@@ -18,22 +23,36 @@ const Modal: React.FC<ModalProps> = ({
   type,
   message = "",
   defaultValue = "",
-  defaultTagType = "Brak kategorii", // Domyślny typ
+  defaultTagType = "Brak kategorii",
+  readonly = false, // Domyślnie false
   resolve,
 }) => {
   const [value, setValue] = useState(defaultValue);
   const [selectedOption, setSelectedOption] = useState(defaultTagType); // Ustawienie wartości domyślnej
   const inputRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+
+  //const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
   useEffect(() => {
     if (isOpen) {
+      setValue(defaultValue);
+      setSelectedOption(defaultTagType);
       if ((type === "prompt" || type === "promptWithTagType") && inputRef.current) {
         inputRef.current.focus();
       }
-      setValue(defaultValue);
-      setSelectedOption(defaultTagType);
+      if (type === "monaco" && editorRef.current) {
+        editorRef.current.focus();
+      }
     }
   }, [isOpen, type, defaultValue, defaultTagType]);
+
+  const handleEditorDidMount: EditorProps["onMount"] = (editor) => {
+    editorRef.current = editor;
+    if (!readonly) {
+      editor.focus();
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -55,7 +74,7 @@ const Modal: React.FC<ModalProps> = ({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
-      <div className="p-6 bg-white rounded shadow-md w-80">
+      <div className={`${type === "monaco" ? "w-full h-full" : "w-96"} p-6 bg-white rounded shadow-md overflow-hidden`}>
         <h2 className="mb-4 text-lg font-semibold">{title}</h2>
         {type === "confirm" ? (
           <>
@@ -112,6 +131,40 @@ const Modal: React.FC<ModalProps> = ({
             <button className="w-full p-2 mt-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300" onClick={handleCancel}>
               Anuluj
             </button>
+          </>
+        ) : type === "monaco" ? (
+          <>
+            {/* <Editor height="300px" defaultLanguage="javascript" value={value} onChange={(v) => setValue(v || "")} /> */}
+
+            <div className="monaco-editor-container border-2 border-blue-500 rounded-lg shadow-md">
+              <MonacoEditor
+                height="calc(100vh - 250px)" //150px  // Ustaw wysokość edytora, aby pasowała do okna modalnego
+                defaultLanguage="plaintext"
+                value={defaultValue} //value
+                onChange={(newValue) => setValue(newValue || "")}
+                options={{
+                  readOnly: readonly, // Ustawienie readonly
+                  lineNumbers: "off",
+                  minimap: { enabled: false },
+                  //glyphMargin: true,
+                  folding: false,
+                  scrollBeyondLastLine: false,
+                  renderLineHighlight: "none",
+                  overviewRulerLanes: 0,
+                  hideCursorInOverviewRuler: true,
+                }}
+                onMount={handleEditorDidMount}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 mt-4">
+              <button className="p-2 text-white bg-blue-500 rounded hover:bg-blue-700" onClick={handleSubmit}>
+                Zatwierdź
+              </button>
+              <button className="p-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300" onClick={handleCancel}>
+                Anuluj
+              </button>
+            </div>
           </>
         ) : null}
       </div>
